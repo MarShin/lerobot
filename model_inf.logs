@@ -1,0 +1,286 @@
+(lerobot)  ✘ MartinShin@Marz-MacBook-Pro  ~/code/robotics/lerobot   main  lerobot-train \
+  --policy.repo_id=marshin68/my_smolvla
+  --policy.path=lerobot/smolvla_base \
+  --dataset.repo_id=marshin68/record-test \
+  --batch_size=4 \
+  --steps=100 \
+  --output_dir=outputs/train/my_smolvla \
+  --job_name=my_smolvla_training \
+  --policy.device=mps \
+  --wandb.enable=true
+Traceback (most recent call last):
+  File "/Users/MartinShin/miniconda3/envs/lerobot/lib/python3.10/site-packages/draccus/parsers/decoding.py", line 357, in _try_functions
+    return func(val, path)
+  File "/Users/MartinShin/miniconda3/envs/lerobot/lib/python3.10/site-packages/draccus/parsers/decoding.py", line 185, in decode_choice_class
+    raise ParsingError(f"Expected a dict with a '{CHOICE_TYPE_KEY}' key for {cls}, got {raw_value}")
+draccus.utils.ParsingError: Expected a dict with a 'type' key for <class 'lerobot.configs.policies.PreTrainedConfig'>, got {'repo_id': 'marshin68/my_smolvla'}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/MartinShin/miniconda3/envs/lerobot/bin/lerobot-train", line 7, in <module>
+    sys.exit(main())
+  File "/Users/MartinShin/code/robotics/lerobot/src/lerobot/scripts/lerobot_train.py", line 532, in main
+    train()
+  File "/Users/MartinShin/code/robotics/lerobot/src/lerobot/configs/parser.py", line 232, in wrapper_inner
+    cfg = draccus.parse(config_class=argtype, config_path=config_path, args=cli_args)
+  File "/Users/MartinShin/miniconda3/envs/lerobot/lib/python3.10/site-packages/draccus/argparsing.py", line 211, in parse
+    return parser.parse_args(args)
+  File "/Users/MartinShin/miniconda3/envs/lerobot/lib/python3.10/site-packages/draccus/argparsing.py", line 102, in parse_args
+    args, _ = self.parse_known_args(args, namespace, is_parse_args=True)
+  File "/Users/MartinShin/miniconda3/envs/lerobot/lib/python3.10/site-packages/draccus/argparsing.py", line 136, in parse_known_args
+    parsed_t = self._postprocessing(parsed_args)
+  File "/Users/MartinShin/miniconda3/envs/lerobot/lib/python3.10/site-packages/draccus/argparsing.py", line 180, in _postprocessing
+    cfg = decoding.decode(self.config_class, deflat_d)
+  File "/Users/MartinShin/miniconda3/envs/lerobot/lib/python3.10/site-packages/draccus/parsers/registry_utils.py", line 78, in wrapper
+    return base_func(*args, **kw)
+  File "/Users/MartinShin/miniconda3/envs/lerobot/lib/python3.10/site-packages/draccus/parsers/decoding.py", line 48, in decode
+    return get_decoding_fn(cls)(raw_value, ())  # type: ignore
+  File "/Users/MartinShin/miniconda3/envs/lerobot/lib/python3.10/site-packages/draccus/parsers/decoding.py", line 135, in decode_dataclass
+    raise e
+  File "/Users/MartinShin/miniconda3/envs/lerobot/lib/python3.10/site-packages/draccus/parsers/decoding.py", line 133, in decode_dataclass
+    field_value = get_decoding_fn(field_type)(raw_value, (*path, name))
+  File "/Users/MartinShin/miniconda3/envs/lerobot/lib/python3.10/site-packages/draccus/parsers/decoding.py", line 384, in _try_functions
+    raise DecodingError(path, message) from exception_to_raise_from
+draccus.utils.DecodingError: `policy`: Could not decode the value into any of the given types:
+    PreTrainedConfig: Expected a dict with a 'type' key for <class 'lerobot.configs.policies.PreTrainedConfig'>, got {'repo_id': 'marshin68/my_smolvla'}
+
+zsh: no such file or directory: --policy.path=lerobot/smolvla_base
+(lerobot)  ✘ MartinShin@Marz-MacBook-Pro  ~/code/robotics/lerobot   main 
+
+(lerobot)  ✘ MartinShin@Marz-MacBook-Pro  ~/code/robotics/lerobot   main 
+(lerobot)  ✘ MartinShin@Marz-MacBook-Pro  ~/code/robotics/lerobot   main  lerobot-train \
+  --policy.repo_id=marshin68/my_smolvla \
+  --policy.path=lerobot/smolvla_base \
+  --dataset.repo_id=marshin68/record-test \
+  --batch_size=4 \
+  --steps=100 \
+  --output_dir=outputs/train/my_smolvla \
+  --job_name=my_smolvla_training \
+  --policy.device=mps \
+  --wandb.enable=true
+WARNING:lerobot.configs.policies:Device 'cuda' is not available. Switching to 'mps'.
+INFO 2026-01-25 18:34:32 ot_train.py:195 {'batch_size': 4,
+ 'checkpoint_path': None,
+ 'dataset': {'episodes': None,
+             'image_transforms': {'enable': False,
+                                  'max_num_transforms': 3,
+                                  'random_order': False,
+                                  'tfs': {'affine': {'kwargs': {'degrees': [-5.0,
+                                                                            5.0],
+                                                                'translate': [0.05,
+                                                                              0.05]},
+                                                     'type': 'RandomAffine',
+                                                     'weight': 1.0},
+                                          'brightness': {'kwargs': {'brightness': [0.8,
+                                                                                   1.2]},
+                                                         'type': 'ColorJitter',
+                                                         'weight': 1.0},
+                                          'contrast': {'kwargs': {'contrast': [0.8,
+                                                                               1.2]},
+                                                       'type': 'ColorJitter',
+                                                       'weight': 1.0},
+                                          'hue': {'kwargs': {'hue': [-0.05,
+                                                                     0.05]},
+                                                  'type': 'ColorJitter',
+                                                  'weight': 1.0},
+                                          'saturation': {'kwargs': {'saturation': [0.5,
+                                                                                   1.5]},
+                                                         'type': 'ColorJitter',
+                                                         'weight': 1.0},
+                                          'sharpness': {'kwargs': {'sharpness': [0.5,
+                                                                                 1.5]},
+                                                        'type': 'SharpnessJitter',
+                                                        'weight': 1.0}}},
+             'repo_id': 'marshin68/record-test',
+             'revision': None,
+             'root': None,
+             'streaming': False,
+             'use_imagenet_stats': True,
+             'video_backend': 'torchcodec'},
+ 'env': None,
+ 'eval': {'batch_size': 50, 'n_episodes': 50, 'use_async_envs': False},
+ 'eval_freq': 20000,
+ 'job_name': 'my_smolvla_training',
+ 'log_freq': 200,
+ 'num_workers': 4,
+ 'optimizer': {'betas': [0.9, 0.95],
+               'eps': 1e-08,
+               'grad_clip_norm': 10.0,
+               'lr': 0.0001,
+               'type': 'adamw',
+               'weight_decay': 1e-10},
+ 'output_dir': 'outputs/train/my_smolvla',
+ 'peft': None,
+ 'policy': {'adapt_to_pi_aloha': False,
+            'add_image_special_tokens': False,
+            'attention_mode': 'cross_attn',
+            'chunk_size': 50,
+            'device': 'mps',
+            'empty_cameras': 0,
+            'expert_width_multiplier': 0.75,
+            'freeze_vision_encoder': True,
+            'input_features': {'observation.images.camera1': {'shape': [3,
+                                                                        256,
+                                                                        256],
+                                                              'type': <FeatureType.VISUAL: 'VISUAL'>},
+                               'observation.images.camera2': {'shape': [3,
+                                                                        256,
+                                                                        256],
+                                                              'type': <FeatureType.VISUAL: 'VISUAL'>},
+                               'observation.images.camera3': {'shape': [3,
+                                                                        256,
+                                                                        256],
+                                                              'type': <FeatureType.VISUAL: 'VISUAL'>},
+                               'observation.state': {'shape': [6],
+                                                     'type': <FeatureType.STATE: 'STATE'>}},
+            'license': None,
+            'load_vlm_weights': True,
+            'max_action_dim': 32,
+            'max_period': 4.0,
+            'max_state_dim': 32,
+            'min_period': 0.004,
+            'n_action_steps': 50,
+            'n_obs_steps': 1,
+            'normalization_mapping': {'ACTION': <NormalizationMode.MEAN_STD: 'MEAN_STD'>,
+                                      'STATE': <NormalizationMode.MEAN_STD: 'MEAN_STD'>,
+                                      'VISUAL': <NormalizationMode.IDENTITY: 'IDENTITY'>},
+            'num_expert_layers': 0,
+            'num_steps': 10,
+            'num_vlm_layers': 16,
+            'optimizer_betas': [0.9, 0.95],
+            'optimizer_eps': 1e-08,
+            'optimizer_grad_clip_norm': 10.0,
+            'optimizer_lr': 0.0001,
+            'optimizer_weight_decay': 1e-10,
+            'output_features': {'action': {'shape': [6],
+                                           'type': <FeatureType.ACTION: 'ACTION'>}},
+            'pad_language_to': 'max_length',
+            'prefix_length': 0,
+            'pretrained_path': 'lerobot/smolvla_base',
+            'private': None,
+            'push_to_hub': True,
+            'repo_id': 'marshin68/my_smolvla',
+            'resize_imgs_with_padding': [512, 512],
+            'rtc_config': None,
+            'scheduler_decay_lr': 2.5e-06,
+            'scheduler_decay_steps': 30000,
+            'scheduler_warmup_steps': 1000,
+            'self_attn_every_n_layers': 2,
+            'tags': None,
+            'tokenizer_max_length': 48,
+            'train_expert_only': True,
+            'train_state_proj': True,
+            'type': 'smolvla',
+            'use_amp': False,
+            'use_cache': True,
+            'use_delta_joint_actions_aloha': False,
+            'use_peft': False,
+            'vlm_model_name': 'HuggingFaceTB/SmolVLM2-500M-Video-Instruct'},
+ 'rabc_epsilon': 1e-06,
+ 'rabc_head_mode': 'sparse',
+ 'rabc_kappa': 0.01,
+ 'rabc_progress_path': None,
+ 'rename_map': {},
+ 'resume': False,
+ 'save_checkpoint': True,
+ 'save_freq': 20000,
+ 'scheduler': {'decay_lr': 2.5e-06,
+               'num_decay_steps': 30000,
+               'num_warmup_steps': 1000,
+               'peak_lr': 0.0001,
+               'type': 'cosine_decay_with_warmup'},
+ 'seed': 1000,
+ 'steps': 100,
+ 'tolerance_s': 0.0001,
+ 'use_policy_training_preset': True,
+ 'use_rabc': False,
+ 'wandb': {'disable_artifact': False,
+           'enable': True,
+           'entity': None,
+           'mode': None,
+           'notes': None,
+           'project': 'lerobot',
+           'run_id': None}}
+INFO 2026-01-25 18:34:35 db_utils.py:102 Logs will be synced with wandb.
+INFO 2026-01-25 18:34:35 db_utils.py:103 Track this run --> https://wandb.ai/marshin/lerobot/runs/3hh1cvvb
+INFO 2026-01-25 18:34:35 ot_train.py:215 Creating dataset
+INFO 2026-01-25 18:34:35 ot_train.py:233 Creating policy
+Loading  HuggingFaceTB/SmolVLM2-500M-Video-Instruct weights ...
+config.json: 3.77kB [00:00, 4.17MB/s]
+`torch_dtype` is deprecated! Use `dtype` instead!
+model.safetensors: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2.03G/2.03G [00:21<00:00, 96.1MB/s]
+generation_config.json: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 136/136 [00:00<00:00, 183kB/s]
+processor_config.json: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 67.0/67.0 [00:00<00:00, 80.4kB/s]
+chat_template.json: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 430/430 [00:00<00:00, 764kB/s]
+preprocessor_config.json: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 599/599 [00:00<00:00, 675kB/s]
+tokenizer_config.json: 28.6kB [00:00, 21.5MB/s]
+vocab.json: 801kB [00:00, 7.58MB/s]
+merges.txt: 466kB [00:00, 31.8MB/s]
+tokenizer.json: 3.55MB [00:00, 29.1MB/s]
+added_tokens.json: 4.74kB [00:00, 2.04MB/s]
+special_tokens_map.json: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 868/868 [00:00<00:00, 1.59MB/s]
+Reducing the number of VLM layers to 16 ...
+model.safetensors: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 907M/907M [00:15<00:00, 57.1MB/s]
+Traceback (most recent call last):
+  File "/Users/MartinShin/miniconda3/envs/lerobot/bin/lerobot-train", line 7, in <module>
+    sys.exit(main())
+  File "/Users/MartinShin/code/robotics/lerobot/src/lerobot/scripts/lerobot_train.py", line 532, in main
+    train()
+  File "/Users/MartinShin/code/robotics/lerobot/src/lerobot/configs/parser.py", line 233, in wrapper_inner
+    response = fn(cfg, *args, **kwargs)
+  File "/Users/MartinShin/code/robotics/lerobot/src/lerobot/scripts/lerobot_train.py", line 234, in train
+    policy = make_policy(
+  File "/Users/MartinShin/code/robotics/lerobot/src/lerobot/policies/factory.py", line 526, in make_policy
+    validate_visual_features_consistency(cfg, features)
+  File "/Users/MartinShin/code/robotics/lerobot/src/lerobot/policies/utils.py", line 249, in validate_visual_features_consistency
+    raise_feature_mismatch_error(provided_visuals, expected_visuals)
+  File "/Users/MartinShin/code/robotics/lerobot/src/lerobot/policies/utils.py", line 214, in raise_feature_mismatch_error
+    raise ValueError(
+ValueError: Feature mismatch between dataset/environment and policy config.
+- Missing features: ['observation.images.camera1', 'observation.images.camera2', 'observation.images.camera3']
+- Extra features: ['observation.images.front']
+
+Please ensure your dataset and policy use consistent feature names.
+If your dataset uses different observation keys (e.g., cameras named differently), use the `--rename_map` argument, for example:
+  --rename_map='{"observation.images.left": "observation.images.camera1", "observation.images.top": "observation.images.camera2"}'
+(lerobot)  ✘ MartinShin@Marz-MacBook-Pro  ~/code/robotics/lerobot   main 
+
+(lerobot)  ✘ MartinShin@Marz-MacBook-Pro  ~/code/robotics/lerobot   main 
+
+(lerobot)  ✘ MartinShin@Marz-MacBook-Pro  ~/code/robotics/lerobot   main 
+(lerobot)  ✘ MartinShin@Marz-MacBook-Pro  ~/code/robotics/lerobot   main  python examples/rtc/eval_with_real_robot.py \
+    --policy.path=lerobot/pi0_base \
+    --robot.type=so100_follower \
+    --robot.port=/dev/tty.usbmodem58FA1026211 \
+    --robot.id=my_awesome_follower_arm \
+    --robot.cameras="{ front: {type: opencv, index_or_path: 0, width: 1920, height: 1080, fps: 30}}" \
+    --task="Grab the black cube" \
+    --duration=120 \
+    --device=mps
+config.json: 1.90kB [00:00, 1.96MB/s]
+WARNING:lerobot.configs.policies:Device 'cuda' is not available. Switching to 'mps'.
+WARNING:lerobot.configs.policies:Device 'cuda' is not available. Switching to 'mps'.
+INFO 2026-01-25 18:41:24 al_robot.py:439 Using device: mps
+INFO 2026-01-25 18:41:24 ils/utils.py:46 Metal backend detected, using mps.
+WARNING 2026-01-25 18:41:24 /policies.py:86 Device 'cuda' is not available. Switching to 'mps'.
+INFO 2026-01-25 18:41:25 ils/utils.py:46 Metal backend detected, using mps.
+WARNING 2026-01-25 18:41:25 /policies.py:86 Device 'cuda' is not available. Switching to 'mps'.
+The PI0 model is a direct port of the OpenPI implementation.
+This implementation follows the original OpenPI structure for compatibility.
+Original implementation: https://github.com/Physical-Intelligence/openpi
+`torch_dtype` is deprecated! Use `dtype` instead!
+Traceback (most recent call last):
+  File "/Users/MartinShin/code/robotics/lerobot/examples/rtc/eval_with_real_robot.py", line 559, in <module>
+    demo_cli()
+  File "/Users/MartinShin/code/robotics/lerobot/src/lerobot/configs/parser.py", line 233, in wrapper_inner
+    response = fn(cfg, *args, **kwargs)
+  File "/Users/MartinShin/code/robotics/lerobot/examples/rtc/eval_with_real_robot.py", line 469, in demo_cli
+    policy = policy_class.from_pretrained(cfg.policy.pretrained_path, config=config)
+  File "/Users/MartinShin/code/robotics/lerobot/src/lerobot/policies/pi0/modeling_pi0.py", line 998, in from_pretrained
+    model = cls(config, **kwargs)
+  File "/Users/MartinShin/code/robotics/lerobot/src/lerobot/policies/pi0/modeling_pi0.py", line 947, in __init__
+    self.model = PI0Pytorch(config, rtc_processor=self.rtc_processor)
+  File "/Users/MartinShin/code/robotics/lerobot/src/lerobot/policies/pi0/modeling_pi0.py", line 587, in __init__
+    raise ValueError(msg) from None
+ValueError: An incorrect transformer version is used, please create an issue on https://github.com/huggingface/lerobot/issues
