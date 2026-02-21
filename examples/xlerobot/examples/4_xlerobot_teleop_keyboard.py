@@ -397,7 +397,7 @@ def main():
     # robot = XLerobotClient(robot_config)    
 
     # For local/wired connection
-    robot_config = XLerobotConfig()
+    robot_config = XLerobotConfig(port2="/dev/tty.usbmodem5B140298121", port1="/dev/tty.usbmodem5B140300111")
     robot = XLerobot(robot_config)
     
     try:

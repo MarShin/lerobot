@@ -238,7 +238,7 @@ class SimpleTeleopArm:
         action = self.p_control_action(robot)
         robot.send_action(action)
 
-    def execute_rectangular_trajectory(self, robot, fps=30):
+    def execute_rectangular_trajectory(self, robot, fps=30, keyboard=None, quit_keys=None):
         """
         Execute a blocking rectangular trajectory on the x-y plane.
         
@@ -259,13 +259,19 @@ class SimpleTeleopArm:
         dt = 1.0 / fps
         
         while True:
+            if keyboard is not None and quit_keys is not None:
+                pressed_keys = set(keyboard.get_action().keys())
+                if any(key in pressed_keys for key in quit_keys):
+                    print(f"[{self.prefix}] Quit requested during trajectory.")
+                    return False
+
             current_time = time.time()
             elapsed_time = current_time - start_time
             
             # Check if trajectory is complete
             if elapsed_time >= self.rectangular_trajectory.total_duration:
                 print(f"[{self.prefix}] Rectangular trajectory completed!")
-                break
+                return True
                 
             # Get target position from trajectory
             target_x, target_y = self.rectangular_trajectory.get_trajectory_point(
@@ -309,12 +315,13 @@ class SimpleTeleopArm:
                 
             except Exception as e:
                 print(f"[{self.prefix}] IK failed at x={self.current_x:.4f}, y={self.current_y:.4f}: {e}")
-                break
+                return False
                 
             # Maintain control frequency
             # busy_wait(dt)
         
         print(f"[{self.prefix}] Trajectory execution finished.")
+        return True
 
     def handle_keys(self, key_state):
         # Joint increments
@@ -495,7 +502,7 @@ def main():
     # robot = XLerobot2WheelsClient(robot_config)    
 
     # For local/wired connection
-    robot_config = XLerobot2WheelsConfig(id=robot_name)
+    robot_config = XLerobot2WheelsConfig(id=robot_name, port2="/dev/tty.usbmodem5B140298121", port1="/dev/tty.usbmodem5B140300111")
     robot = XLerobot2Wheels(robot_config)
     
     try:
@@ -591,19 +598,31 @@ def main():
     try:
         while True:
             pressed_keys = set(keyboard.get_action().keys())
+            quit_keys = {robot.teleop_keys["quit"], "q", "Q", "\x1b"}
+            if any(key in pressed_keys for key in quit_keys):
+                print("[MAIN] Quit requested by keyboard.")
+                break
             left_key_state = {action: (key in pressed_keys) for action, key in LEFT_KEYMAP.items()}
             right_key_state = {action: (key in pressed_keys) for action, key in RIGHT_KEYMAP.items()}
 
             # Handle rectangular trajectory for left arm (y key)
             if left_key_state.get('triangle'):
                 print("[MAIN] Left arm rectangular trajectory triggered!")
-                left_arm.execute_rectangular_trajectory(robot, fps=FPS)
+                success = left_arm.execute_rectangular_trajectory(
+                    robot, fps=FPS, keyboard=keyboard, quit_keys=quit_keys
+                )
+                if not success:
+                    break
                 continue
 
             # Handle rectangular trajectory for right arm (Y key)  
             if right_key_state.get('triangle'):
                 print("[MAIN] Right arm rectangular trajectory triggered!")
-                right_arm.execute_rectangular_trajectory(robot, fps=FPS)
+                success = right_arm.execute_rectangular_trajectory(
+                    robot, fps=FPS, keyboard=keyboard, quit_keys=quit_keys
+                )
+                if not success:
+                    break
                 continue
 
             # Handle reset for left arm
@@ -639,6 +658,8 @@ def main():
             # print(f"[MAIN] Observation: {obs}")
             log_rerun_data(obs, action)
             # busy_wait(1.0 / FPS)
+    except KeyboardInterrupt:
+        print("[MAIN] KeyboardInterrupt received (Ctrl+C).")
     finally:
         robot.disconnect()
         keyboard.disconnect()

@@ -287,7 +287,13 @@ def video_stream_loop(model, cap, target_objects=None):
     
     while True:
         try:
+            print("Capturing video frame...")
             ret, frame = cap.read()
+
+            print("Returned from cap.read() - ret:", ret)
+
+            print("Frame shape:", frame.shape if ret else "No frame")
+
             if not ret:
                 print("Camera frame not available")
                 continue
@@ -298,6 +304,7 @@ def video_stream_loop(model, cap, target_objects=None):
             # Create gray background
             annotated_frame = cv2.cvtColor(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), cv2.COLOR_GRAY2BGR)
             annotated_frame[:] = BACKGROUND_COLOR  # Set all pixels to gray
+            print('Annotated frame:', annotated_frame.shape)
             
             if not results or not hasattr(results[0], 'masks') or not results[0].masks:
                 # No objects detected - just show gray background
@@ -329,7 +336,7 @@ def video_stream_loop(model, cap, target_objects=None):
                         annotated_frame[mask_bool] = color
             
             # Show segmentation mask in a window
-            cv2.imshow("YOLOE Segmentation", annotated_frame)
+            # cv2.imshow("YOLOE Segmentation", annotated_frame)
             
             # Allow quitting vision mode with 'q' or ESC
             key = cv2.waitKey(1) & 0xFF
@@ -580,7 +587,8 @@ def main():
         print(f"Initialize end effector position: x={current_x:.4f}, y={current_y:.4f}")
         
         # Initialize YOLOE and camera
-        model = YOLOE("yoloe-11l-seg.pt")  # or select yoloe-11s/m-seg.pt for different sizes
+        # model = YOLOE("yoloe-11l-seg.pt")  # or select yoloe-11s/m-seg.pt for different sizes
+        model = YOLOE("yoloe-11s-seg.pt")
         
         # Get detection targets from user input
         print("\n" + "="*60)
@@ -620,7 +628,8 @@ def main():
             return
         print(f"Available cameras: {cameras}")
         selected = int(input(f"Select camera index from {cameras}: "))
-        cap = cv2.VideoCapture(selected)
+        # cap = cv2.VideoCapture(selected)
+        cap = cv2.VideoCapture(selected, cv2.CAP_AVFOUNDATION)
         if not cap.isOpened():
             print("Camera not found!")
             return

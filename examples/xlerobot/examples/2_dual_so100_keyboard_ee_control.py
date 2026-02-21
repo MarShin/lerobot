@@ -465,19 +465,21 @@ def main():
         from lerobot.teleoperators.keyboard.configuration_keyboard import KeyboardTeleopConfig
         
         # Configure dual-arm robots
-        arm1_port = "/dev/ttyACM0"
-        arm2_port = "/dev/ttyACM1"
+        # arm1_port = "/dev/ttyACM0"
+        # arm2_port = "/dev/ttyACM1"
+        arm1_port = "/dev/tty.usbmodem5B140298121"
+        arm2_port = "/dev/tty.usbmodem5B140300111"
         
         print(f"Configuring first arm: {arm1_port}")  
         print(f"Configuring second arm: {arm2_port}")
         
         # Create dual-arm robot instances
-        arm1_config = SO100FollowerConfig(port=arm1_port)
-        arm2_config = SO100FollowerConfig(port=arm2_port)
+        arm1_config = SO100FollowerConfig(port=arm1_port, id="xlerobot_follower_right")
+        arm2_config = SO100FollowerConfig(port=arm2_port, id="xlerobot_follower_left")
         
         arm1_robot = SO100Follower(arm1_config)
         arm2_robot = SO100Follower(arm2_config)
-        
+
         robots = {
             'arm1': arm1_robot,
             'arm2': arm2_robot
