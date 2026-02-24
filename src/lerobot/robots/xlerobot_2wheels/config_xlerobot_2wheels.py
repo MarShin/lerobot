@@ -23,6 +23,7 @@ from ..config import RobotConfig
 
 def xlerobot_2wheels_cameras_config() -> dict[str, CameraConfig]:
     return {
+        # camera index subject to change
         "left_wrist": OpenCVCameraConfig(
             index_or_path=0, fps=30, width=640, height=480, rotation=Cv2Rotation.NO_ROTATION
         ),
@@ -31,7 +32,6 @@ def xlerobot_2wheels_cameras_config() -> dict[str, CameraConfig]:
             index_or_path=1, fps=30, width=640, height=480, rotation=Cv2Rotation.NO_ROTATION
         ),  
 
-        # shouuld be id=3; 2 is macbook
         "head(RGDB)": OpenCVCameraConfig(
             index_or_path=2, fps=30, width=640, height=480, rotation=Cv2Rotation.NO_ROTATION
         ),                     

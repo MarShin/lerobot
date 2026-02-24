@@ -4,11 +4,12 @@ from robocrew.robots.XLeRobot.tools import create_move_forward, create_turn_righ
 from robocrew.robots.XLeRobot.servo_controls import ServoControler
 
 # 📷 Set up main camera
-main_camera = RobotCamera(1)  # camera usb port Eg: /dev/video0
+main_camera = RobotCamera(2)  # camera usb port Eg: /dev/video0
 
 # 🎛️ Set up servo controller
-right_arm_wheel_usb = "/dev/tty.usbmodem5B140298121"  # provide your right arm usb port. Eg: /dev/ttyACM1
-servo_controler = ServoControler(right_arm_wheel_usb=right_arm_wheel_usb)
+right_arm_wheel_usb = "/dev/tty.usbmodem5B140298121"
+left_arm_wheel_usb = "/dev/tty.usbmodem5B140300111"  # provide your right arm usb port. Eg: /dev/ttyACM1
+servo_controler = ServoControler(right_arm_wheel_usb=right_arm_wheel_usb, left_arm_head_usb=left_arm_wheel_usb)
 
 # 🛠️ Set up tools
 move_forward = create_move_forward(servo_controler)
@@ -24,5 +25,5 @@ agent = LLMAgent(
 )
 
 # 🎯 Give it a task and go!
-agent.task = "Approach a human."
+agent.task = "Raise left arm. And then raise your right arm."
 agent.go()
