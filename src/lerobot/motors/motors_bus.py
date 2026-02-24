@@ -1134,6 +1134,11 @@ class SerialMotorsBus(MotorsBusBase):
         names = self._get_motors_list(motors)
         ids = [self.motors[motor].id for motor in names]
         models = [self.motors[motor].model for motor in names]
+        if not ids:
+            raise ValueError(
+                f"Cannot sync_read('{data_name}') with an empty motor selection. "
+                "Provide at least one motor name or id."
+            )
 
         if self._has_different_ctrl_tables:
             assert_same_address(self.model_ctrl_table, models, data_name)
@@ -1225,6 +1230,12 @@ class SerialMotorsBus(MotorsBusBase):
         """
 
         raw_ids_values = self._get_ids_values_dict(values)
+        if not raw_ids_values:
+            raise ValueError(
+                f"Cannot sync_write('{data_name}') with an empty motor/value mapping. "
+                "Ensure action keys match the configured motors."
+            )
+
         models = [self._id_to_model(id_) for id_ in raw_ids_values]
         if self._has_different_ctrl_tables:
             assert_same_address(self.model_ctrl_table, models, data_name)

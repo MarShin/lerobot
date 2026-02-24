@@ -124,6 +124,7 @@ from lerobot.teleoperators import (  # noqa: F401
     so_leader,
     unitree_g1,
 )
+from lerobot.teleoperators.gamepad.teleop_gamepad import GamepadTeleop
 from lerobot.teleoperators.keyboard.teleop_keyboard import KeyboardTeleop
 from lerobot.utils.constants import ACTION, OBS_STR
 from lerobot.utils.control_utils import (
@@ -141,6 +142,118 @@ from lerobot.utils.utils import (
     log_say,
 )
 from lerobot.utils.visualization_utils import init_rerun, log_rerun_data
+
+BI_SO_KEYBOARD_JOINT_STEP_DEG = 2.0
+BI_SO_GAMEPAD_JOINT_STEP_DEG = 2.0
+BI_SO_GRIPPER_STEP = 3.0
+
+# key -> (joint_name, direction)
+BI_SO_KEYBOARD_BINDINGS: dict[str, tuple[str, float]] = {
+    # Left arm
+    "q": ("left_shoulder_pan.pos", 1.0),
+    "a": ("left_shoulder_pan.pos", -1.0),
+    "w": ("left_shoulder_lift.pos", 1.0),
+    "s": ("left_shoulder_lift.pos", -1.0),
+    "e": ("left_elbow_flex.pos", 1.0),
+    "d": ("left_elbow_flex.pos", -1.0),
+    "r": ("left_wrist_flex.pos", 1.0),
+    "f": ("left_wrist_flex.pos", -1.0),
+    "t": ("left_wrist_roll.pos", 1.0),
+    "g": ("left_wrist_roll.pos", -1.0),
+    "y": ("left_gripper.pos", 1.0),
+    "h": ("left_gripper.pos", -1.0),
+    # Right arm
+    "u": ("right_shoulder_pan.pos", 1.0),
+    "j": ("right_shoulder_pan.pos", -1.0),
+    "i": ("right_shoulder_lift.pos", 1.0),
+    "k": ("right_shoulder_lift.pos", -1.0),
+    "o": ("right_elbow_flex.pos", 1.0),
+    "l": ("right_elbow_flex.pos", -1.0),
+    "n": ("right_wrist_flex.pos", 1.0),
+    "m": ("right_wrist_flex.pos", -1.0),
+    "b": ("right_wrist_roll.pos", 1.0),
+    "v": ("right_wrist_roll.pos", -1.0),
+    "c": ("right_gripper.pos", 1.0),
+    "x": ("right_gripper.pos", -1.0),
+}
+
+
+def _build_hold_action_from_observation(robot: Robot, obs: RobotObservation) -> RobotAction:
+    action_keys = list(robot.action_features)
+    missing = [k for k in action_keys if k not in obs]
+    if missing:
+        raise ValueError(
+            "Cannot build fallback teleop action from observation. "
+            f"Missing observation keys: {missing[:6]} (total missing={len(missing)})."
+        )
+    return {k: float(obs[k]) for k in action_keys}
+
+
+def _clamp_gripper(action: RobotAction, joint_name: str) -> None:
+    action[joint_name] = min(100.0, max(0.0, action[joint_name]))
+
+
+def _map_keyboard_to_bi_so_follower_action(
+    robot: Robot, obs: RobotObservation, raw_action: RobotAction
+) -> RobotAction:
+    action = _build_hold_action_from_observation(robot, obs)
+    pressed_keys = {str(k).lower() for k in raw_action}
+
+    for key in pressed_keys:
+        binding = BI_SO_KEYBOARD_BINDINGS.get(key)
+        if binding is None:
+            continue
+
+        joint_name, direction = binding
+        step = BI_SO_GRIPPER_STEP if joint_name.endswith("gripper.pos") else BI_SO_KEYBOARD_JOINT_STEP_DEG
+        action[joint_name] += direction * step
+
+        if joint_name.endswith("gripper.pos"):
+            _clamp_gripper(action, joint_name)
+
+    return action
+
+
+def _map_gamepad_to_bi_so_follower_action(
+    robot: Robot, obs: RobotObservation, raw_action: RobotAction
+) -> RobotAction:
+    action = _build_hold_action_from_observation(robot, obs)
+
+    dx = float(raw_action.get("delta_x", 0.0))
+    dy = float(raw_action.get("delta_y", 0.0))
+    dz = float(raw_action.get("delta_z", 0.0))
+    step = BI_SO_GAMEPAD_JOINT_STEP_DEG
+
+    for side in ("left", "right"):
+        action[f"{side}_shoulder_pan.pos"] += dx * step
+        action[f"{side}_shoulder_lift.pos"] += dy * step
+        action[f"{side}_elbow_flex.pos"] += dz * step
+
+    gripper_mode = int(raw_action.get("gripper", 1))
+    if gripper_mode in [0, 2]:
+        sign = 1.0 if gripper_mode == 2 else -1.0
+        for side in ("left", "right"):
+            gripper_joint = f"{side}_gripper.pos"
+            action[gripper_joint] += sign * BI_SO_GRIPPER_STEP
+            _clamp_gripper(action, gripper_joint)
+
+    return action
+
+
+def _adapt_teleop_action_for_robot(
+    robot: Robot, teleop: Teleoperator, obs: RobotObservation, raw_action: RobotAction
+) -> RobotAction:
+    if robot.name != "bi_so_follower":
+        return raw_action
+
+    # Fallback support to allow recording without a physical leader arm.
+    if isinstance(teleop, KeyboardTeleop) and teleop.name == "keyboard":
+        return _map_keyboard_to_bi_so_follower_action(robot, obs, raw_action)
+
+    if isinstance(teleop, GamepadTeleop):
+        return _map_gamepad_to_bi_so_follower_action(robot, obs, raw_action)
+
+    return raw_action
 
 
 @dataclass
@@ -318,6 +431,14 @@ def record_loop(
         preprocessor.reset()
         postprocessor.reset()
 
+    required_action_names: list[str] = []
+    if dataset is not None:
+        for feature_name, feature in dataset.features.items():
+            is_joint_like_feature = feature.get("dtype") == "float32" and len(feature.get("shape", ())) == 1
+            if feature_name.startswith(ACTION) and is_joint_like_feature and feature.get("names") is not None:
+                required_action_names.extend(feature["names"])
+        required_action_names = list(dict.fromkeys(required_action_names))
+
     timestamp = 0
     start_episode_t = time.perf_counter()
     while timestamp < control_time_s:
@@ -352,7 +473,8 @@ def record_loop(
             act_processed_policy: RobotAction = make_robot_action(action_values, dataset.features)
 
         elif policy is None and isinstance(teleop, Teleoperator):
-            act = teleop.get_action()
+            raw_teleop_action = teleop.get_action()
+            act = _adapt_teleop_action_for_robot(robot, teleop, obs, raw_teleop_action)
 
             # Applies a pipeline to the raw teleop action, default is IdentityProcessor
             act_processed_teleop = teleop_action_processor((act, obs))
@@ -379,6 +501,28 @@ def record_loop(
         else:
             action_values = act_processed_teleop
             robot_action_to_send = robot_action_processor((act_processed_teleop, obs))
+
+        if required_action_names:
+            missing_robot_action_keys = [k for k in required_action_names if k not in robot_action_to_send]
+            missing_dataset_action_keys = [k for k in required_action_names if k not in action_values]
+            if missing_robot_action_keys or missing_dataset_action_keys:
+                missing_keys = (
+                    missing_robot_action_keys if missing_robot_action_keys else missing_dataset_action_keys
+                )
+                invalid_source = (
+                    "robot_action_to_send" if missing_robot_action_keys else "action_values"
+                )
+                received_keys = sorted(
+                    robot_action_to_send if missing_robot_action_keys else action_values
+                )
+                raise ValueError(
+                    "Generated action is incompatible with the robot/dataset action space. "
+                    f"Missing keys in {invalid_source}: {missing_keys[:6]} "
+                    f"(total missing={len(missing_keys)}). "
+                    f"Received keys: {received_keys[:10]}. "
+                    "This often means the teleop type does not match the robot "
+                    "(e.g., --teleop.type=keyboard with --robot.type=bi_so_follower)."
+                )
 
         # Send action to robot
         # Action can eventually be clipped using `max_relative_target`,
@@ -477,7 +621,8 @@ def record(cfg: RecordConfig) -> LeRobotDataset:
             )
 
         # Load pretrained policy
-        policy = None if cfg.policy is None else make_policy(cfg.policy, ds_meta=dataset.meta)
+        policy = None if cfg.policy is None else make_policy(cfg.policy, ds_meta=dataset.meta, rename_map=cfg.dataset.rename_map)
+
         preprocessor = None
         postprocessor = None
         if cfg.policy is not None:

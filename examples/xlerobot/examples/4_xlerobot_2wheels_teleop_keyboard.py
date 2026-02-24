@@ -502,7 +502,7 @@ def main():
     # robot = XLerobot2WheelsClient(robot_config)    
 
     # For local/wired connection
-    robot_config = XLerobot2WheelsConfig(id=robot_name, port2="/dev/tty.usbmodem5B140298121", port1="/dev/tty.usbmodem5B140300111")
+    robot_config = XLerobot2WheelsConfig(id=robot_name, port1="/dev/tty.usbmodem5B140300111", port2="/dev/tty.usbmodem5B140298121")
     robot = XLerobot2Wheels(robot_config)
     
     try:
