@@ -495,15 +495,16 @@ def main():
     # ip = "192.168.1.123"  # This is for zmq connection
     ip = "localhost"  # This is for local/wired connection
     # robot_name = "my_xlerobot_2wheels_pc"
-    robot_name = "my_xlerobot_2wheels_lab"
+    # robot_name = "my_xlerobot_2wheels_lab"
 
     # For zmq connection
-    # robot_config = XLerobot2WheelsClientConfig(remote_ip=ip, id=robot_name)
-    # robot = XLerobot2WheelsClient(robot_config)    
+    robot_name = "xlerobot_2wheels"
+    robot_config = XLerobot2WheelsClientConfig(remote_ip="raspberrypi.local", id=robot_name)
+    robot = XLerobot2WheelsClient(robot_config)
 
     # For local/wired connection
-    robot_config = XLerobot2WheelsConfig(id=robot_name, port1="/dev/tty.usbmodem5B140300111", port2="/dev/tty.usbmodem5B140298121")
-    robot = XLerobot2Wheels(robot_config)
+    # robot_config = XLerobot2WheelsConfig(id=robot_name, port1="/dev/tty.usbmodem5B140300111", port2="/dev/tty.usbmodem5B140298121")
+    # robot = XLerobot2Wheels(robot_config)
     
     try:
         robot.connect()
@@ -598,7 +599,7 @@ def main():
     try:
         while True:
             pressed_keys = set(keyboard.get_action().keys())
-            quit_keys = {robot.teleop_keys["quit"], "q", "Q", "\x1b"}
+            quit_keys = {robot.teleop_keys["quit"], "\x1b"}
             if any(key in pressed_keys for key in quit_keys):
                 print("[MAIN] Quit requested by keyboard.")
                 break

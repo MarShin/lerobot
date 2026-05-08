@@ -177,3 +177,6 @@ outputs/
 *.urdf
 *.xml
 *.part
+
+# mobile teleop
+*/phone_to_so100/SO101/*
