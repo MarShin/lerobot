@@ -242,7 +242,7 @@ class AndroidPhone(BasePhone, Teleoperator):
     @check_if_already_connected
     def connect(self) -> None:
         logger.info("Starting teleop stream for Android...")
-        self._teleop = Teleop()
+        self._teleop = Teleop(host=self.config.android_host, port=self.config.android_port)
         self._teleop.subscribe(self._android_callback)
         self._teleop_thread = threading.Thread(target=self._teleop.run, daemon=True)
         self._teleop_thread.start()

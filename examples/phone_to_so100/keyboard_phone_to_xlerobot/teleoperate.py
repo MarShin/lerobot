@@ -63,6 +63,8 @@ REMOTE_IP = "raspberrypi.local"
 ROBOT_ID = "my_xlerobot_2wheels"
 URDF_PATH = Path("../SO101/so101_new_calib.urdf")
 TARGET_FRAME_NAME = "gripper_frame_link"
+LEFT_PHONE_PORT = 4443
+RIGHT_PHONE_PORT = 4444
 
 SO101_MOTOR_NAMES = [
     "shoulder_pan",
@@ -268,8 +270,8 @@ def main():
     robot = make_robot()
     keyboard = KeyboardTeleop(KeyboardTeleopConfig())
 
-    left_phone_config = PhoneConfig(phone_os=PhoneOS.ANDROID)
-    right_phone_config = PhoneConfig(phone_os=PhoneOS.ANDROID)
+    left_phone_config = PhoneConfig(phone_os=PhoneOS.ANDROID, android_port=LEFT_PHONE_PORT)
+    right_phone_config = PhoneConfig(phone_os=PhoneOS.ANDROID, android_port=RIGHT_PHONE_PORT)
     left_phone = Phone(left_phone_config)
     right_phone = Phone(right_phone_config)
 
@@ -296,9 +298,9 @@ def main():
         robot.connect()
         keyboard.connect()
 
-        print("Connect/calibrate the left Android phone.")
+        print(f"Connect/calibrate the left Android phone on port {LEFT_PHONE_PORT}.")
         left_phone.connect()
-        print("Connect/calibrate the right Android phone.")
+        print(f"Connect/calibrate the right Android phone on port {RIGHT_PHONE_PORT}.")
         right_phone.connect()
 
         init_rerun(session_name="keyboard_phone_to_xlerobot_teleop")
