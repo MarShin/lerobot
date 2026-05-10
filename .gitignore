@@ -177,5 +177,8 @@ outputs/
 *.xml
 *.part
 
+### XLeRobot extension ###
+.omx/
+
 # mobile teleop
 */phone_to_so100/SO101/*

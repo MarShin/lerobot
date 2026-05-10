@@ -40,9 +40,15 @@ FPS = 30
 
 def main():
     # Initialize the robot and teleoperator
+    # left
     robot_config = SO100FollowerConfig(
-        port="/dev/tty.usbmodem5B140298121", id="my_awesome_follower_arm", use_degrees=True
+        port="/dev/ttyACM0", id="my_awesome_follower_arm", use_degrees=True
     )
+    # right
+    # robot_config = SO100FollowerConfig(
+    #     port="/dev/ttyACM1", id="my_awesome_follower_arm", use_degrees=True
+    # )
+
     # teleop_config = PhoneConfig(phone_os=PhoneOS.IOS)  # or PhoneOS.ANDROID
     teleop_config = PhoneConfig(phone_os=PhoneOS.ANDROID)
 

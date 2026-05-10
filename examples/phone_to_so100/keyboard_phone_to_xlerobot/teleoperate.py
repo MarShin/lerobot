@@ -61,7 +61,7 @@ from lerobot.utils.visualization_utils import init_rerun, log_rerun_data
 FPS = 30
 REMOTE_IP = "raspberrypi.local"
 ROBOT_ID = "my_xlerobot_2wheels"
-URDF_PATH = Path("examples/phone_to_so100/SO101/so101_new_calib.urdf")
+URDF_PATH = Path("../SO101/so101_new_calib.urdf")
 TARGET_FRAME_NAME = "gripper_frame_link"
 
 SO101_MOTOR_NAMES = [
