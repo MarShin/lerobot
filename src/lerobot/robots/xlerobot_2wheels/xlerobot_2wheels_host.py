@@ -175,30 +175,44 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description="XLerobot2Wheels Host")
-    parser.add_argument("--robot.id", type=str, default="xlerobot_2wheels", help="Robot ID")
-    parser.add_argument("--robot.port1", type=str, default="/dev/ttyACM0", help="Port 1")
-    parser.add_argument("--robot.port2", type=str, default="/dev/ttyACM1", help="Port 2")
-    parser.add_argument("--host.port_zmq_cmd", type=int, default=5555, help="ZMQ command port")
-    parser.add_argument("--host.port_zmq_observations", type=int, default=5556, help="ZMQ observation port")
-    parser.add_argument("--host.connection_time_s", type=int, default=3600, help="Connection time limit")
-    parser.add_argument("--host.watchdog_timeout_ms", type=int, default=500, help="Watchdog timeout")
-    parser.add_argument("--host.max_loop_freq_hz", type=int, default=30, help="Max loop frequency")
+    parser.add_argument("--robot.id", dest="robot_id", type=str, default="xlerobot_2wheels", help="Robot ID")
+    parser.add_argument("--robot.port1", dest="robot_port1", type=str, default="/dev/ttyACM0", help="Port 1")
+    parser.add_argument("--robot.port2", dest="robot_port2", type=str, default="/dev/ttyACM1", help="Port 2")
+    parser.add_argument(
+        "--host.port_zmq_cmd", dest="host_port_zmq_cmd", type=int, default=5555, help="ZMQ command port"
+    )
+    parser.add_argument(
+        "--host.port_zmq_observations",
+        dest="host_port_zmq_observations",
+        type=int,
+        default=5556,
+        help="ZMQ observation port",
+    )
+    parser.add_argument(
+        "--host.connection_time_s", dest="host_connection_time_s", type=int, default=3600, help="Connection time limit"
+    )
+    parser.add_argument(
+        "--host.watchdog_timeout_ms", dest="host_watchdog_timeout_ms", type=int, default=500, help="Watchdog timeout"
+    )
+    parser.add_argument(
+        "--host.max_loop_freq_hz", dest="host_max_loop_freq_hz", type=int, default=30, help="Max loop frequency"
+    )
     
     args = parser.parse_args()
     
     # Create configs
     robot_config = XLerobot2WheelsConfig(
-        id=args.robot.id,
-        port1=args.robot.port1,
-        port2=args.robot.port2,
+        id=args.robot_id,
+        port1=args.robot_port1,
+        port2=args.robot_port2,
     )
     
     host_config = XLerobot2WheelsHostConfig(
-        port_zmq_cmd=args.host.port_zmq_cmd,
-        port_zmq_observations=args.host.port_zmq_observations,
-        connection_time_s=args.host.connection_time_s,
-        watchdog_timeout_ms=args.host.watchdog_timeout_ms,
-        max_loop_freq_hz=args.host.max_loop_freq_hz,
+        port_zmq_cmd=args.host_port_zmq_cmd,
+        port_zmq_observations=args.host_port_zmq_observations,
+        connection_time_s=args.host_connection_time_s,
+        watchdog_timeout_ms=args.host_watchdog_timeout_ms,
+        max_loop_freq_hz=args.host_max_loop_freq_hz,
     )
     
     # Create and run host

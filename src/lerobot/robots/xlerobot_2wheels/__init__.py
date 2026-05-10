@@ -14,7 +14,6 @@
 
 from .xlerobot_2wheels import XLerobot2Wheels
 from .xlerobot_2wheels_client import XLerobot2WheelsClient
-from .xlerobot_2wheels_host import XLerobot2WheelsHost
 from .config_xlerobot_2wheels import (
     XLerobot2WheelsConfig,
     XLerobot2WheelsClientConfig,
@@ -29,3 +28,11 @@ __all__ = [
     "XLerobot2WheelsClientConfig",
     "XLerobot2WheelsHostConfig",
 ]
+
+
+def __getattr__(name: str):
+    if name == "XLerobot2WheelsHost":
+        from .xlerobot_2wheels_host import XLerobot2WheelsHost
+
+        return XLerobot2WheelsHost
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

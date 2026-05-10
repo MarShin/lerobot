@@ -62,7 +62,6 @@ class XLerobot2WheelsConfig(RobotConfig):
     max_relative_target: int | None = None
 
     cameras: dict[str, CameraConfig] = field(default_factory=xlerobot_2wheels_cameras_config)
-    print("Camera configuration:", cameras)
     # Set to `True` for backward compatibility with previous policies/dataset
     use_degrees: bool = False
 
