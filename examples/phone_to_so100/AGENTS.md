@@ -229,9 +229,8 @@ Use this section to track the extension from single-arm phone teleop to the full
 dataset recommendation above as the target contract: teleop may use EE-space internally, but the recorded
 primary `action` should be the final robot-native command dictionary.
 
-- [ ] Create an XLeRobot teleoperation script.
-  - Target: a new XLeRobot-specific `teleoperate.py` example, either in this folder or a dedicated
-    XLeRobot phone folder if the implementation grows beyond this tutorial.
+- [x] Create an XLeRobot teleoperation script.
+  - Initial implementation: `examples/phone_to_so100/keyboard_phone_to_xlerobot/teleoperate.py`.
   - Inputs: two Android `Phone` teleoperators, one mapped to the left SO101 arm and one mapped to the right
     SO101 arm.
   - Inputs: keyboard teleop for remote head and wheel-base control, using the current remote-control path in
