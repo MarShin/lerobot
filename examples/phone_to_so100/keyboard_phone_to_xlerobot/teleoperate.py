@@ -29,6 +29,7 @@ action dictionary through XLerobot2WheelsClient.
 
 from __future__ import annotations
 
+import argparse
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -65,6 +66,7 @@ URDF_PATH = Path("../SO101/so101_new_calib.urdf")
 TARGET_FRAME_NAME = "gripper_frame_link"
 LEFT_PHONE_PORT = 4443
 RIGHT_PHONE_PORT = 4444
+RERUN_LOG_EVERY_N = 10
 
 SO101_MOTOR_NAMES = [
     "shoulder_pan",
@@ -224,7 +226,8 @@ def process_phone_arm_action(
     processor: RobotProcessorPipeline[tuple[RobotAction, RobotObservation], RobotAction],
 ) -> RobotAction:
     required_phone_keys = {"phone.pos", "phone.rot", "phone.raw_inputs", "phone.enabled"}
-    if not required_phone_keys.issubset(phone_action):
+    if not required_phone_keys.issubset(phone_action) or not bool(phone_action["phone.enabled"]):
+        processor.reset()
         return hold_current_arm_position(observation, side)
 
     arm_observation = extract_arm_observation(observation, side)
@@ -261,7 +264,26 @@ def make_robot() -> XLerobot2WheelsClient:
     return XLerobot2WheelsClient(robot_config)
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Teleoperate XLeRobot with two Android phones.")
+    parser.add_argument(
+        "--enable-rerun",
+        action="store_true",
+        help="Enable Rerun visualization. Disabled by default for lower teleop latency.",
+    )
+    parser.add_argument(
+        "--rerun-log-every-n",
+        type=int,
+        default=RERUN_LOG_EVERY_N,
+        help="When Rerun is enabled, log one frame every N control-loop ticks.",
+    )
+    return parser.parse_args()
+
+
 def main():
+    args = parse_args()
+    rerun_log_every_n = max(1, args.rerun_log_every_n)
+
     if not URDF_PATH.exists():
         raise FileNotFoundError(
             f"SO101 URDF not found at {URDF_PATH}. Update URDF_PATH before running this script."
@@ -303,12 +325,14 @@ def main():
         print(f"Connect/calibrate the right Android phone on port {RIGHT_PHONE_PORT}.")
         right_phone.connect()
 
-        init_rerun(session_name="keyboard_phone_to_xlerobot_teleop")
+        if args.enable_rerun:
+            init_rerun(session_name="keyboard_phone_to_xlerobot_teleop")
         print_controls(robot)
 
         observation = robot.get_observation()
         head_controller = HeadKeyboardController.from_observation(observation)
         base_controller = BaseKeyboardController(robot)
+        loop_idx = 0
 
         while True:
             loop_start = time.perf_counter()
@@ -341,7 +365,9 @@ def main():
 
             merged_action = {**left_arm_action, **right_arm_action, **head_action, **base_action}
             robot.send_action(merged_action)
-            log_rerun_data(observation=observation, action=merged_action)
+            if args.enable_rerun and loop_idx % rerun_log_every_n == 0:
+                log_rerun_data(observation=observation, action=merged_action)
+            loop_idx += 1
 
             precise_sleep(max(1.0 / FPS - (time.perf_counter() - loop_start), 0.0))
 

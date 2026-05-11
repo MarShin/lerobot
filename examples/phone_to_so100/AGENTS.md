@@ -261,6 +261,35 @@ primary `action` should be the final robot-native command dictionary.
   - Convert policy output with `make_robot_action()` and send it directly through the XLeRobot client path.
   - Only add EE postprocessing at inference if the dataset action space is intentionally changed to EE-space.
 
+## XLeRobot Teleop Performance Notes
+
+Dual-phone XLeRobot teleop does more synchronous work per tick than the single-arm phone example: it reads a
+remote robot observation, polls two phones, runs two per-arm EE pipelines, solves IK twice, sends one merged
+remote action, and may log Rerun data every frame. If phone enable feels delayed or arm motion is sluggish,
+consider these speedups before changing phone axis mapping:
+
+- Skip the per-arm EE/IK pipeline when that phone is disabled; hold or omit that arm's command instead of
+  recomputing FK and IK every loop. The current XLeRobot teleop script resets that arm's processor while the
+  phone is disabled, then sends a measured-joint hold command so the next enable press captures a fresh
+  latched reference.
+- Optimize `EEReferenceAndDelta(use_latched_reference=True)` so FK runs only when a reference pose is needed.
+  With latched reference enabled, the current implementation still computes FK at the start of every call.
+  Semantically, FK is only required on the enable rising edge when `reference_ee_pose` is captured, and once
+  before the first disabled hold command if no command has been latched yet. During continuous enabled motion,
+  target deltas are applied to the stored `reference_ee_pose`, so the measured current EE pose is not needed
+  for this step.
+- Seed live IK from the previous IK solution after enable instead of measured joints every frame, while still
+  resetting from measured joints on enable or after large tracking errors.
+- Move remote observation receiving into a background "latest observation" cache so the phone-action loop is
+  not blocked by ZMQ polling on every tick.
+- On the Pi host, drain queued ZMQ commands and execute only the newest command per host tick so stale commands
+  do not add perceived latency.
+- Throttle or disable `log_rerun_data(...)` during live responsiveness testing. The current XLeRobot teleop
+  script keeps Rerun off by default; use `--enable-rerun` and optionally `--rerun-log-every-n` when
+  visualization is needed.
+- Avoid sending full hold commands for inactive arms every tick if the robot-side controller can safely keep
+  torque/position without repeated command refresh.
+
 ## Common Edits
 
 - To change motion speed, adjust `end_effector_step_sizes` in `EEReferenceAndDelta`.
