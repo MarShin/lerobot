@@ -271,6 +271,9 @@ remote robot observation, polls two phones, runs two per-arm EE pipelines, solve
 remote action, and may log Rerun data every frame. If phone enable feels delayed or arm motion is sluggish,
 consider these speedups before changing phone axis mapping:
 
+- Profile first with `--profile-latency` and compare the same rolling timing output after each change. The
+  script reports average/max timings for observation polling, phone reads, per-arm processing, command send,
+  Rerun logging, total loop work, and sleep headroom.
 - Skip the per-arm EE/IK pipeline when that phone is disabled; hold or omit that arm's command instead of
   recomputing FK and IK every loop. The current XLeRobot teleop script resets that arm's processor while the
   phone is disabled, then sends a measured-joint hold command so the next enable press captures a fresh

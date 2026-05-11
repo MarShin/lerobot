@@ -31,7 +31,7 @@ from __future__ import annotations
 
 import argparse
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
@@ -67,6 +67,7 @@ TARGET_FRAME_NAME = "gripper_frame_link"
 LEFT_PHONE_PORT = 4443
 RIGHT_PHONE_PORT = 4444
 RERUN_LOG_EVERY_N = 10
+PROFILE_EVERY_N = 60
 
 SO101_MOTOR_NAMES = [
     "shoulder_pan",
@@ -99,6 +100,65 @@ HEAD_LIMITS_DEG = {
 
 
 ArmSide = Literal["left", "right"]
+
+
+@dataclass
+class LoopProfiler:
+    enabled: bool
+    report_every_n: int
+    target_dt_s: float
+    sums: dict[str, float] = field(default_factory=dict)
+    maxes: dict[str, float] = field(default_factory=dict)
+    counts: dict[str, int] = field(default_factory=dict)
+    loop_count: int = 0
+
+    def record(self, name: str, dt_s: float) -> None:
+        if not self.enabled:
+            return
+        self.sums[name] = self.sums.get(name, 0.0) + dt_s
+        self.maxes[name] = max(self.maxes.get(name, 0.0), dt_s)
+        self.counts[name] = self.counts.get(name, 0) + 1
+
+    def maybe_report(self) -> None:
+        if not self.enabled:
+            return
+
+        self.loop_count += 1
+        if self.loop_count < self.report_every_n:
+            return
+
+        names = [
+            "robot_obs",
+            "left_phone",
+            "right_phone",
+            "keyboard",
+            "left_arm",
+            "right_arm",
+            "head_base",
+            "send_action",
+            "rerun",
+            "loop_work",
+            "sleep",
+        ]
+        parts = []
+        for name in names:
+            count = self.counts.get(name, 0)
+            if count == 0:
+                continue
+            avg_ms = self.sums[name] / count * 1000.0
+            max_ms = self.maxes[name] * 1000.0
+            parts.append(f"{name}={avg_ms:.1f}/{max_ms:.1f}ms")
+
+        target_ms = self.target_dt_s * 1000.0
+        print(
+            f"[latency avg/max over {self.loop_count} loops, target={target_ms:.1f}ms] "
+            + " | ".join(parts),
+            flush=True,
+        )
+        self.sums.clear()
+        self.maxes.clear()
+        self.counts.clear()
+        self.loop_count = 0
 
 
 @dataclass
@@ -293,12 +353,28 @@ def parse_args() -> argparse.Namespace:
         default=RERUN_LOG_EVERY_N,
         help="When Rerun is enabled, log one frame every N control-loop ticks.",
     )
+    parser.add_argument(
+        "--profile-latency",
+        action="store_true",
+        help="Print rolling control-loop timing to identify latency bottlenecks.",
+    )
+    parser.add_argument(
+        "--profile-every-n",
+        type=int,
+        default=PROFILE_EVERY_N,
+        help="When latency profiling is enabled, print one timing report every N control-loop ticks.",
+    )
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
     rerun_log_every_n = max(1, args.rerun_log_every_n)
+    profiler = LoopProfiler(
+        enabled=args.profile_latency,
+        report_every_n=max(1, args.profile_every_n),
+        target_dt_s=1.0 / FPS,
+    )
 
     if not URDF_PATH.exists():
         raise FileNotFoundError(
@@ -357,10 +433,21 @@ def main():
         while True:
             loop_start = time.perf_counter()
 
+            section_start = time.perf_counter()
             observation = robot.get_observation()
+            profiler.record("robot_obs", time.perf_counter() - section_start)
+
+            section_start = time.perf_counter()
             left_phone_action = left_phone.get_action()
+            profiler.record("left_phone", time.perf_counter() - section_start)
+
+            section_start = time.perf_counter()
             right_phone_action = right_phone.get_action()
+            profiler.record("right_phone", time.perf_counter() - section_start)
+
+            section_start = time.perf_counter()
             pressed_keys = set(keyboard.get_action().keys())
+            profiler.record("keyboard", time.perf_counter() - section_start)
 
             if robot.teleop_keys["quit"] in pressed_keys:
                 print("Quit requested by keyboard.")
@@ -373,18 +460,23 @@ def main():
             if right_phone_enabled and RESET_KEYS["right_arm"] not in pressed_keys:
                 right_reset_to_init = False
 
+            section_start = time.perf_counter()
             left_arm_action = process_phone_arm_action(
                 phone_action=left_phone_action,
                 observation=observation,
                 side="left",
                 processor=left_processor,
             )
+            profiler.record("left_arm", time.perf_counter() - section_start)
+
+            section_start = time.perf_counter()
             right_arm_action = process_phone_arm_action(
                 phone_action=right_phone_action,
                 observation=observation,
                 side="right",
                 processor=right_processor,
             )
+            profiler.record("right_arm", time.perf_counter() - section_start)
 
             if RESET_KEYS["left_arm"] in pressed_keys:
                 left_processor.reset()
@@ -398,17 +490,29 @@ def main():
             if right_reset_to_init:
                 right_arm_action = init_right_arm_action.copy()
 
+            section_start = time.perf_counter()
             dt_s = time.perf_counter() - loop_start
             head_action = head_controller.update(pressed_keys, dt_s)
             base_action = base_controller.update(pressed_keys)
+            profiler.record("head_base", time.perf_counter() - section_start)
 
             merged_action = {**left_arm_action, **right_arm_action, **head_action, **base_action}
+            section_start = time.perf_counter()
             robot.send_action(merged_action)
+            profiler.record("send_action", time.perf_counter() - section_start)
             if args.enable_rerun and loop_idx % rerun_log_every_n == 0:
+                section_start = time.perf_counter()
                 log_rerun_data(observation=observation, action=merged_action)
+                profiler.record("rerun", time.perf_counter() - section_start)
             loop_idx += 1
 
-            precise_sleep(max(1.0 / FPS - (time.perf_counter() - loop_start), 0.0))
+            loop_work_s = time.perf_counter() - loop_start
+            profiler.record("loop_work", loop_work_s)
+            sleep_s = max(1.0 / FPS - loop_work_s, 0.0)
+            section_start = time.perf_counter()
+            precise_sleep(sleep_s)
+            profiler.record("sleep", time.perf_counter() - section_start)
+            profiler.maybe_report()
 
     except KeyboardInterrupt:
         print("KeyboardInterrupt received.")
