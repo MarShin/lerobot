@@ -239,6 +239,9 @@ primary `action` should be the final robot-native command dictionary.
     `src/lerobot/robots/xlerobot_2wheels/xlerobot_2wheels_client.py`.
   - Output: one merged robot action dictionary containing left arm joint targets, right arm joint targets,
     head motor targets, `x.vel`, and `theta.vel`.
+  - Keyboard reset controls: `1` resets the left arm to the startup pose and `2` resets the right arm to the
+    startup pose. Startup pose is captured from the first remote observation after robot/phone connection.
+    Use `?` to set head motor targets to zero.
   - Processor shape: phone actions can be mapped through per-arm EE pipelines, but the final action sent to
     `XLerobot2WheelsClient.send_action()` should already be in robot-native keys.
   - Safety: keep per-arm EE bounds/rate limits before IK and keep base/head command limits before sending

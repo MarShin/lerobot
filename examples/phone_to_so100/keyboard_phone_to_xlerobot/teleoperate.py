@@ -85,7 +85,11 @@ HEAD_KEYS = {
     "head_motor_1-": ">",
     "head_motor_2+": ",",
     "head_motor_2-": ".",
-    "reset": "?",
+    "zero": "?",
+}
+RESET_KEYS = {
+    "left_arm": "1",
+    "right_arm": "2",
 }
 HEAD_STEP_DEG_PER_S = 30.0
 HEAD_LIMITS_DEG = {
@@ -111,7 +115,7 @@ class HeadKeyboardController:
         )
 
     def update(self, pressed_keys: set[str], dt_s: float) -> RobotAction:
-        if HEAD_KEYS["reset"] in pressed_keys:
+        if HEAD_KEYS["zero"] in pressed_keys:
             self.target_positions = {"head_motor_1": 0.0, "head_motor_2": 0.0}
 
         step = HEAD_STEP_DEG_PER_S * dt_s
@@ -188,6 +192,10 @@ def hold_current_arm_position(observation: RobotObservation, side: ArmSide) -> R
     return {f"{prefix}_{name}.pos": float(observation[f"{prefix}_{name}.pos"]) for name in SO101_MOTOR_NAMES}
 
 
+def extract_init_arm_position(observation: RobotObservation, side: ArmSide) -> RobotAction:
+    return hold_current_arm_position(observation, side)
+
+
 def make_phone_to_arm_joints_processor(
     *,
     platform: PhoneOS,
@@ -235,6 +243,11 @@ def process_phone_arm_action(
     return prefix_arm_action(unprefixed_action, side)
 
 
+def phone_action_enabled(phone_action: RobotAction) -> bool:
+    required_phone_keys = {"phone.pos", "phone.rot", "phone.raw_inputs", "phone.enabled"}
+    return required_phone_keys.issubset(phone_action) and bool(phone_action["phone.enabled"])
+
+
 def print_controls(robot: XLerobot2WheelsClient) -> None:
     print("\nXLeRobot two-phone teleoperation")
     print("Android phone #1: left arm, hold Move to enable")
@@ -247,7 +260,10 @@ def print_controls(robot: XLerobot2WheelsClient) -> None:
     print("Keyboard head:")
     print("  </>: head_motor_1 +/-")
     print("  ,/.: head_motor_2 +/-")
-    print("  ?: reset head targets to zero\n")
+    print("  ?: set head targets to zero")
+    print("Keyboard reset:")
+    print("  1: reset left arm to startup pose")
+    print("  2: reset right arm to startup pose\n")
 
 
 def make_robot() -> XLerobot2WheelsClient:
@@ -330,8 +346,12 @@ def main():
         print_controls(robot)
 
         observation = robot.get_observation()
+        init_left_arm_action = extract_init_arm_position(observation, "left")
+        init_right_arm_action = extract_init_arm_position(observation, "right")
         head_controller = HeadKeyboardController.from_observation(observation)
         base_controller = BaseKeyboardController(robot)
+        left_reset_to_init = False
+        right_reset_to_init = False
         loop_idx = 0
 
         while True:
@@ -346,6 +366,13 @@ def main():
                 print("Quit requested by keyboard.")
                 break
 
+            left_phone_enabled = phone_action_enabled(left_phone_action)
+            right_phone_enabled = phone_action_enabled(right_phone_action)
+            if left_phone_enabled and RESET_KEYS["left_arm"] not in pressed_keys:
+                left_reset_to_init = False
+            if right_phone_enabled and RESET_KEYS["right_arm"] not in pressed_keys:
+                right_reset_to_init = False
+
             left_arm_action = process_phone_arm_action(
                 phone_action=left_phone_action,
                 observation=observation,
@@ -358,6 +385,18 @@ def main():
                 side="right",
                 processor=right_processor,
             )
+
+            if RESET_KEYS["left_arm"] in pressed_keys:
+                left_processor.reset()
+                left_reset_to_init = True
+            if RESET_KEYS["right_arm"] in pressed_keys:
+                right_processor.reset()
+                right_reset_to_init = True
+
+            if left_reset_to_init:
+                left_arm_action = init_left_arm_action.copy()
+            if right_reset_to_init:
+                right_arm_action = init_right_arm_action.copy()
 
             dt_s = time.perf_counter() - loop_start
             head_action = head_controller.update(pressed_keys, dt_s)
