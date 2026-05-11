@@ -364,6 +364,11 @@ def parse_args() -> argparse.Namespace:
         default=PROFILE_EVERY_N,
         help="When latency profiling is enabled, print one timing report every N control-loop ticks.",
     )
+    parser.add_argument(
+        "--profile-phone-stream",
+        action="store_true",
+        help="Print Android WebXR callback rate and move=True percentage for each phone.",
+    )
     return parser.parse_args()
 
 
@@ -384,8 +389,16 @@ def main():
     robot = make_robot()
     keyboard = KeyboardTeleop(KeyboardTeleopConfig())
 
-    left_phone_config = PhoneConfig(phone_os=PhoneOS.ANDROID, android_port=LEFT_PHONE_PORT)
-    right_phone_config = PhoneConfig(phone_os=PhoneOS.ANDROID, android_port=RIGHT_PHONE_PORT)
+    left_phone_config = PhoneConfig(
+        phone_os=PhoneOS.ANDROID,
+        android_port=LEFT_PHONE_PORT,
+        android_profile_stream=args.profile_phone_stream,
+    )
+    right_phone_config = PhoneConfig(
+        phone_os=PhoneOS.ANDROID,
+        android_port=RIGHT_PHONE_PORT,
+        android_profile_stream=args.profile_phone_stream,
+    )
     left_phone = Phone(left_phone_config)
     right_phone = Phone(right_phone_config)
 

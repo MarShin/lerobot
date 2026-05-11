@@ -29,6 +29,8 @@ The phone never directly commands robot joints. It emits a small action dictiona
 - iOS uses HEBI Mobile I/O. Hold `B1` to enable motion; analog `A3` controls gripper velocity.
 - Android uses the `teleop` WebXR package. Hold `Move` to enable motion; buttons `A` and `B` open/close
   the gripper.
+- Android calibration is not complete at websocket connection time. After tapping `Start` in the WebXR page,
+  press and hold `Hold to Move` once to send a `move=True` pose message and capture calibration.
 
 `get_action()` returns:
 
@@ -274,6 +276,8 @@ consider these speedups before changing phone axis mapping:
 - Profile first with `--profile-latency` and compare the same rolling timing output after each change. The
   script reports average/max timings for observation polling, phone reads, per-arm processing, command send,
   Rerun logging, total loop work, and sleep headroom.
+- If the browser UI appears frozen, also run with `--profile-phone-stream` to see each Android server's
+  incoming WebXR callback rate and percentage of messages with `move=True`.
 - Skip the per-arm EE/IK pipeline when that phone is disabled; hold or omit that arm's command instead of
   recomputing FK and IK every loop. The current XLeRobot teleop script resets that arm's processor while the
   phone is disabled, then sends a measured-joint hold command so the next enable press captures a fresh

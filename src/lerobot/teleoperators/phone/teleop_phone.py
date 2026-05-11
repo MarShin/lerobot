@@ -234,6 +234,12 @@ class AndroidPhone(BasePhone, Teleoperator):
         self._latest_pose = None
         self._latest_message = None
         self._android_lock = threading.Lock()
+        self._stream_report_start_t = time.perf_counter()
+        self._stream_last_msg_t: float | None = None
+        self._stream_count = 0
+        self._stream_move_count = 0
+        self._stream_interval_sum_s = 0.0
+        self._stream_interval_max_s = 0.0
 
     @property
     def is_connected(self) -> bool:
@@ -254,7 +260,7 @@ class AndroidPhone(BasePhone, Teleoperator):
         print(
             "Hold the phone so that: top edge points forward in same direction as the robot (robot +x) and screen points up (robot +z)"
         )
-        print("Touch and move on the WebXR page to capture this pose...\n")
+        print("Tap Start in the WebXR page, then press and hold 'Hold to Move' to capture this pose...\n")
 
         pos, rot = self._wait_for_capture_trigger()
         self._calib_pos = pos.copy()
@@ -275,14 +281,24 @@ class AndroidPhone(BasePhone, Teleoperator):
             A tuple containing the position (np.ndarray) and rotation (Rotation) of the phone at the
             moment the trigger was activated.
         """
+        last_status_t = 0.0
         while True:
             with self._android_lock:
                 msg = self._latest_message or {}
+                has_pose = self._latest_pose is not None
 
             if bool(msg.get("move", False)):
                 ok, pos, rot, _pose = self._read_current_pose()
                 if ok:
                     return pos, rot
+
+            now = time.perf_counter()
+            if now - last_status_t > 2.0:
+                if has_pose:
+                    print("Waiting for Android calibration trigger: hold the web UI 'Hold to Move' button...")
+                else:
+                    print("Waiting for Android WebXR pose: tap Start and allow the browser AR/session prompts...")
+                last_status_t = now
 
             time.sleep(0.01)
 
@@ -327,6 +343,43 @@ class AndroidPhone(BasePhone, Teleoperator):
         with self._android_lock:
             self._latest_pose = pose
             self._latest_message = message
+
+        self._profile_android_stream(message)
+
+    def _profile_android_stream(self, message: dict) -> None:
+        if not self.config.android_profile_stream:
+            return
+
+        now = time.perf_counter()
+        if self._stream_last_msg_t is not None:
+            interval_s = now - self._stream_last_msg_t
+            self._stream_interval_sum_s += interval_s
+            self._stream_interval_max_s = max(self._stream_interval_max_s, interval_s)
+        self._stream_last_msg_t = now
+        self._stream_count += 1
+        if bool(message.get("move", False)):
+            self._stream_move_count += 1
+
+        elapsed_s = now - self._stream_report_start_t
+        if elapsed_s < self.config.android_profile_every_s:
+            return
+
+        interval_count = max(self._stream_count - 1, 1)
+        avg_interval_ms = self._stream_interval_sum_s / interval_count * 1000.0
+        max_interval_ms = self._stream_interval_max_s * 1000.0
+        hz = self._stream_count / elapsed_s
+        move_pct = self._stream_move_count / self._stream_count * 100.0
+        print(
+            f"[android:{self.config.android_port} stream] "
+            f"rate={hz:.1f}Hz move={move_pct:.0f}% interval_avg/max={avg_interval_ms:.1f}/{max_interval_ms:.1f}ms",
+            flush=True,
+        )
+
+        self._stream_report_start_t = now
+        self._stream_count = 0
+        self._stream_move_count = 0
+        self._stream_interval_sum_s = 0.0
+        self._stream_interval_max_s = 0.0
 
     @check_if_not_connected
     def get_action(self) -> dict:

@@ -33,6 +33,8 @@ class PhoneConfig(TeleoperatorConfig):
     phone_os: PhoneOS = PhoneOS.IOS
     android_host: str = "0.0.0.0"
     android_port: int = 4443
+    android_profile_stream: bool = False
+    android_profile_every_s: float = 2.0
     camera_offset = np.array(
         [0.0, -0.02, 0.04]
     )  # iPhone 14 Pro camera is 2cm off center and 4cm above center
