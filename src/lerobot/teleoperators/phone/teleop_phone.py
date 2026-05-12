@@ -235,6 +235,7 @@ class AndroidPhone(BasePhone, Teleoperator):
         self._latest_message = None
         self._android_lock = threading.Lock()
         self._stream_report_start_t = time.perf_counter()
+        self._stream_stale_report_t = time.perf_counter()
         self._stream_last_msg_t: float | None = None
         self._stream_count = 0
         self._stream_move_count = 0
@@ -381,8 +382,40 @@ class AndroidPhone(BasePhone, Teleoperator):
         self._stream_interval_sum_s = 0.0
         self._stream_interval_max_s = 0.0
 
+    def _profile_android_stream_poll(self) -> None:
+        if not self.config.android_profile_stream:
+            return
+
+        now = time.perf_counter()
+        report_every_s = self.config.android_profile_every_s
+        if now - self._stream_stale_report_t < report_every_s:
+            return
+
+        with self._android_lock:
+            has_pose = self._latest_pose is not None
+            latest_message = self._latest_message or {}
+
+        if self._stream_last_msg_t is None:
+            print(
+                f"[android:{self.config.android_port} poll] no WebXR messages received yet",
+                flush=True,
+            )
+            self._stream_stale_report_t = now
+            return
+
+        age_s = now - self._stream_last_msg_t
+        if age_s >= report_every_s:
+            print(
+                f"[android:{self.config.android_port} poll] "
+                f"stale_for={age_s:.1f}s pose={has_pose} last_move={bool(latest_message.get('move', False))}",
+                flush=True,
+            )
+            self._stream_stale_report_t = now
+
     @check_if_not_connected
     def get_action(self) -> dict:
+        self._profile_android_stream_poll()
+
         ok, raw_pos, raw_rot, pose = self._read_current_pose()
         if not ok or not self.is_calibrated:
             return {}

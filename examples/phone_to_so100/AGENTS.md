@@ -273,14 +273,29 @@ remote robot observation, polls two phones, runs two per-arm EE pipelines, solve
 remote action, and may log Rerun data every frame. If phone enable feels delayed or arm motion is sluggish,
 consider these speedups before changing phone axis mapping:
 
+- Current profiling says the Mac-side control loop is not the main bottleneck. `--profile-latency` usually
+  shows `loop_work` around 1-2ms with most of the frame spent sleeping, while per-arm processing stays low.
+  The most suspicious part of the client path is the Android/WebXR stream behavior when the browser UI
+  appears to freeze or stop updating local stats.
+- Current host-side profiling says the Pi control loop is usually healthy once the Mac client is active, but
+  observation sending can block hard when the client is not consuming observations during calibration or
+  disconnect. The current host uses non-blocking observation sends with a low ZMQ high-water mark, so it
+  drops observations instead of blocking the control loop when the Mac is not reading.
+- Each `Phone(...)` instance uses its own Android `Teleop` server and its own port. The current dual-phone
+  script intentionally runs two separate web servers, one for each arm.
+
 - Profile first with `--profile-latency` and compare the same rolling timing output after each change. The
   script reports average/max timings for observation polling, phone reads, per-arm processing, command send,
   Rerun logging, total loop work, and sleep headroom.
 - If the browser UI appears frozen, also run with `--profile-phone-stream` to see each Android server's
-  incoming WebXR callback rate and percentage of messages with `move=True`.
+  incoming WebXR callback rate and percentage of messages with `move=True`. If callbacks stop entirely, the
+  Mac polling side prints `[android:<port> poll] stale_for=...` so a frozen stream is visible even when the
+  callback-side rate reporter has gone silent.
 - To profile the Pi host, run `xlerobot_2wheels_host` with `--host.profile_diagnostics`. It reports host
   loop rate, command rate, observation bandwidth, watchdog count, and average/max timings for command
-  handling, `robot.get_observation()`, and observation serialization/send.
+  handling, `robot.get_observation()`, and observation serialization/send. It also reports `obs_drop` for
+  observations dropped because the Mac was not reading, and `cmd_drop` for queued stale commands skipped
+  when draining to the newest command.
 - Skip the per-arm EE/IK pipeline when that phone is disabled; hold or omit that arm's command instead of
   recomputing FK and IK every loop. The current XLeRobot teleop script resets that arm's processor while the
   phone is disabled, then sends a measured-joint hold command so the next enable press captures a fresh
@@ -296,7 +311,7 @@ consider these speedups before changing phone axis mapping:
 - Move remote observation receiving into a background "latest observation" cache so the phone-action loop is
   not blocked by ZMQ polling on every tick.
 - On the Pi host, drain queued ZMQ commands and execute only the newest command per host tick so stale commands
-  do not add perceived latency.
+  do not add perceived latency. This is implemented in the current host.
 - Throttle or disable `log_rerun_data(...)` during live responsiveness testing. The current XLeRobot teleop
   script keeps Rerun off by default; use `--enable-rerun` and optionally `--rerun-log-every-n` when
   visualization is needed.

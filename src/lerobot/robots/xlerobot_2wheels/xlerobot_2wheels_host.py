@@ -40,8 +40,10 @@ class HostProfiler:
         self.counts: dict[str, int] = {}
         self.loop_count = 0
         self.command_count = 0
+        self.drained_command_count = 0
         self.watchdog_count = 0
         self.observation_bytes = 0
+        self.dropped_observation_count = 0
 
     def record(self, name: str, dt_s: float) -> None:
         if not self.enabled:
@@ -54,6 +56,10 @@ class HostProfiler:
         if self.enabled:
             self.command_count += 1
 
+    def add_drained_commands(self, count: int) -> None:
+        if self.enabled:
+            self.drained_command_count += count
+
     def increment_watchdog(self) -> None:
         if self.enabled:
             self.watchdog_count += 1
@@ -61,6 +67,10 @@ class HostProfiler:
     def add_observation_bytes(self, size_bytes: int) -> None:
         if self.enabled:
             self.observation_bytes += size_bytes
+
+    def increment_dropped_observation(self) -> None:
+        if self.enabled:
+            self.dropped_observation_count += 1
 
     def maybe_report(self) -> None:
         if not self.enabled:
@@ -97,7 +107,8 @@ class HostProfiler:
         print(
             f"[host avg/max over {elapsed_s:.1f}s, target={target_ms:.1f}ms] "
             f"loop={loop_hz:.1f}Hz cmd={command_hz:.1f}Hz obs={obs_kbps:.1f}KiB/s "
-            f"watchdog={self.watchdog_count} | "
+            f"watchdog={self.watchdog_count} cmd_drop={self.drained_command_count} "
+            f"obs_drop={self.dropped_observation_count} | "
             + " | ".join(parts),
             flush=True,
         )
@@ -108,8 +119,10 @@ class HostProfiler:
         self.counts.clear()
         self.loop_count = 0
         self.command_count = 0
+        self.drained_command_count = 0
         self.watchdog_count = 0
         self.observation_bytes = 0
+        self.dropped_observation_count = 0
 
 
 class XLerobot2WheelsHost:
@@ -143,10 +156,13 @@ class XLerobot2WheelsHost:
         
         # Command socket (PULL - receives commands)
         self.zmq_cmd_socket = self.zmq_context.socket(zmq.PULL)
+        self.zmq_cmd_socket.setsockopt(zmq.RCVHWM, 1)
         self.zmq_cmd_socket.bind(f"tcp://*:{self.host_config.port_zmq_cmd}")
         
         # Observation socket (PUSH - sends observations)
         self.zmq_observation_socket = self.zmq_context.socket(zmq.PUSH)
+        self.zmq_observation_socket.setsockopt(zmq.SNDHWM, 1)
+        self.zmq_observation_socket.setsockopt(zmq.SNDTIMEO, 0)
         self.zmq_observation_socket.bind(f"tcp://*:{self.host_config.port_zmq_observations}")
         
         logger.info(f"ZMQ sockets bound to ports {self.host_config.port_zmq_cmd} and {self.host_config.port_zmq_observations}")
@@ -177,9 +193,10 @@ class XLerobot2WheelsHost:
                 if has_command:
                     try:
                         section_start = time.perf_counter()
-                        cmd_string = self.zmq_cmd_socket.recv_string(zmq.NOBLOCK)
+                        cmd_string, drained_command_count = self._recv_latest_command()
                         cmd = json.loads(cmd_string)
                         profiler.record("recv_cmd", time.perf_counter() - section_start)
+                        profiler.add_drained_commands(drained_command_count)
 
                         section_start = time.perf_counter()
                         self._process_command(cmd)
@@ -205,9 +222,12 @@ class XLerobot2WheelsHost:
                     profiler.record("get_observation", time.perf_counter() - section_start)
 
                     section_start = time.perf_counter()
-                    observation_bytes = self._send_observation(obs)
+                    observation_bytes, observation_sent = self._send_observation(obs)
                     profiler.record("send_observation", time.perf_counter() - section_start)
-                    profiler.add_observation_bytes(observation_bytes)
+                    if observation_sent:
+                        profiler.add_observation_bytes(observation_bytes)
+                    else:
+                        profiler.increment_dropped_observation()
                 except Exception as e:
                     logger.error(f"Failed to get observation: {e}")
                 
@@ -238,7 +258,18 @@ class XLerobot2WheelsHost:
         except Exception as e:
             logger.error(f"Failed to process command: {e}")
 
-    def _send_observation(self, obs: dict[str, Any]) -> int:
+    def _recv_latest_command(self) -> tuple[str, int]:
+        """Drain queued commands and return the newest command string."""
+        latest_cmd_string = self.zmq_cmd_socket.recv_string(zmq.NOBLOCK)
+        drained_count = 0
+        while True:
+            try:
+                latest_cmd_string = self.zmq_cmd_socket.recv_string(zmq.NOBLOCK)
+                drained_count += 1
+            except zmq.Again:
+                return latest_cmd_string, drained_count
+
+    def _send_observation(self, obs: dict[str, Any]) -> tuple[int, bool]:
         """Send observation via ZMQ"""
         try:
             # Convert images to base64 for transmission
@@ -255,12 +286,15 @@ class XLerobot2WheelsHost:
             
             # Send observation
             obs_string = json.dumps(obs_for_transmission)
-            self.zmq_observation_socket.send_string(obs_string)
-            return len(obs_string)
+            obs_size = len(obs_string)
+            self.zmq_observation_socket.send_string(obs_string, flags=zmq.NOBLOCK)
+            return obs_size, True
             
+        except zmq.Again:
+            return 0, False
         except Exception as e:
             logger.error(f"Failed to send observation: {e}")
-            return 0
+            return 0, False
 
     def stop(self):
         """Stop the host and disconnect"""
