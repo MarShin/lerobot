@@ -292,9 +292,14 @@ def process_phone_arm_action(
     observation: RobotObservation,
     side: ArmSide,
     processor: RobotProcessorPipeline[tuple[RobotAction, RobotObservation], RobotAction],
+    skip_disabled_phone_ik: bool,
 ) -> RobotAction:
     required_phone_keys = {"phone.pos", "phone.rot", "phone.raw_inputs", "phone.enabled"}
-    if not required_phone_keys.issubset(phone_action) or not bool(phone_action["phone.enabled"]):
+    if not required_phone_keys.issubset(phone_action):
+        processor.reset()
+        return hold_current_arm_position(observation, side)
+
+    if skip_disabled_phone_ik and not bool(phone_action["phone.enabled"]):
         processor.reset()
         return hold_current_arm_position(observation, side)
 
@@ -368,6 +373,14 @@ def parse_args() -> argparse.Namespace:
         "--profile-phone-stream",
         action="store_true",
         help="Print Android WebXR callback rate and move=True percentage for each phone.",
+    )
+    parser.add_argument(
+        "--skip-disabled-phone-ik",
+        action="store_true",
+        help=(
+            "Skip the per-arm EE/IK pipeline while a phone is disabled and hold measured joint position. "
+            "By default disabled phones still run the original EE/IK pipeline."
+        ),
     )
     return parser.parse_args()
 
@@ -479,6 +492,7 @@ def main():
                 observation=observation,
                 side="left",
                 processor=left_processor,
+                skip_disabled_phone_ik=args.skip_disabled_phone_ik,
             )
             profiler.record("left_arm", time.perf_counter() - section_start)
 
@@ -488,6 +502,7 @@ def main():
                 observation=observation,
                 side="right",
                 processor=right_processor,
+                skip_disabled_phone_ik=args.skip_disabled_phone_ik,
             )
             profiler.record("right_arm", time.perf_counter() - section_start)
 

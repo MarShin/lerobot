@@ -1,0 +1,497 @@
+## Pi Host ##
+(lerobot) pi@raspberrypi:~/code/lerobot $ python -m lerobot.robots.xlerobot_2wheels.xlerobot_2wheels_host   --robot.id=my_xlerobot_2wheels   --host.profile_diagnostics   --host.profile_every_s=2
+Press ENTER to restore calibration from file, or type 'c' and press ENTER to run manual calibration: c
+Move left arm and head motors to the middle of their range of motion and press ENTER....
+Move all left arm and head joints sequentially through their entire ranges of motion.
+Recording positions. Press ENTER to stop...
+
+-------------------------------------------
+NAME            |    MIN |    POS |    MAX
+left_arm_shoulder_pan |   1270 |   2348 |   2947
+left_arm_shoulder_lift |   1051 |   2162 |   3281
+left_arm_elbow_flex |    954 |   1857 |   2990
+left_arm_wrist_flex |    882 |   1966 |   3103
+left_arm_wrist_flex |    882 |   1966 |   3103
+left_arm_wrist_roll |   1086 |   2057 |   2975
+left_arm_gripper |   1336 |   1337 |   2771
+head_motor_1    |   1574 |   2066 |   2509
+head_motor_2    |   1671 |   2183 |   2431
+Move right arm motors to the middle of their range of motion and press ENTER....
+Move all right arm joints except '['base_left_wheel', 'base_right_wheel']' sequentially through their entire ranges of motion.
+Recording positions. Press ENTER to stop...
+
+-------------------------------------------
+NAME            |    MIN |    POS |    MAX
+right_arm_shoulder_pan |   1210 |   1742 |   2899
+right_arm_shoulder_lift |    906 |    911 |   3258
+right_arm_elbow_flex |    925 |   2960 |   2960
+right_arm_wrist_flex |    952 |   2172 |   3157
+right_arm_wrist_roll |   1104 |   1973 |   3153
+right_arm_gripper |   1314 |   1688 |   2790
+
+Calibration saved to /home/pi/.cache/huggingface/lerobot/calibration/robots/xlerobot_2wheels/my_xlerobot_2wheels.json
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=0.0Hz obs=0.0KiB/s watchdog=4 cmd_drop=0 obs_drop=60 | cmd_poll=1.1/1.1ms | get_observation=2.8/3.0ms | send_observation=0.0/0.2ms | loop_work=3.9/4.5ms | sleep=29.4/29.5ms
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=0.0Hz obs=0.0KiB/s watchdog=4 cmd_drop=0 obs_drop=60 | cmd_poll=1.1/1.1ms | get_observation=2.8/2.9ms | send_observation=0.0/0.0ms | loop_work=3.9/4.2ms | sleep=29.5/29.5ms
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=0.0Hz obs=0.0KiB/s watchdog=4 cmd_drop=0 obs_drop=60 | cmd_poll=1.1/1.1ms | get_observation=2.8/3.0ms | send_observation=0.0/0.0ms | loop_work=3.9/4.2ms | sleep=29.5/29.5ms
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=0.0Hz obs=0.0KiB/s watchdog=4 cmd_drop=0 obs_drop=60 | cmd_poll=1.1/1.1ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=4.0/4.3ms | sleep=29.4/29.5ms
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=0.0Hz obs=0.0KiB/s watchdog=4 cmd_drop=0 obs_drop=60 | cmd_poll=1.1/1.1ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=4.1/4.3ms | sleep=29.3/29.4ms
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=0.0Hz obs=0.0KiB/s watchdog=4 cmd_drop=0 obs_drop=60 | cmd_poll=1.1/1.1ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=4.1/4.3ms | sleep=29.3/29.4ms
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=0.0Hz obs=6.7KiB/s watchdog=4 cmd_drop=0 obs_drop=39 | cmd_poll=1.1/1.1ms | get_observation=2.9/3.1ms | send_observation=0.1/0.1ms | loop_work=4.1/4.3ms | sleep=29.3/29.4ms
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=0.0Hz obs=19.0KiB/s watchdog=4 cmd_drop=0 obs_drop=0 | cmd_poll=1.1/1.1ms | get_observation=2.9/3.1ms | send_observation=0.1/0.1ms | loop_work=4.1/4.4ms | sleep=29.3/29.7ms
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=0.0Hz obs=19.0KiB/s watchdog=4 cmd_drop=0 obs_drop=0 | cmd_poll=1.1/1.1ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=4.0/4.3ms | sleep=29.3/29.4ms
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=0.0Hz obs=19.0KiB/s watchdog=4 cmd_drop=0 obs_drop=0 | cmd_poll=1.1/1.1ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=4.1/4.4ms | sleep=29.3/29.4ms
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=0.0Hz obs=19.0KiB/s watchdog=4 cmd_drop=0 obs_drop=0 | cmd_poll=1.1/1.1ms | get_observation=2.9/3.1ms | send_observation=0.1/0.1ms | loop_work=4.1/4.4ms | sleep=29.3/29.4ms
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=0.0Hz obs=19.0KiB/s watchdog=4 cmd_drop=0 obs_drop=0 | cmd_poll=1.1/1.1ms | get_observation=2.9/3.0ms | send_observation=0.0/0.1ms | loop_work=4.1/4.3ms | sleep=29.3/29.5ms
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=0.0Hz obs=19.0KiB/s watchdog=4 cmd_drop=0 obs_drop=0 | cmd_poll=1.1/1.1ms | get_observation=2.9/3.1ms | send_observation=0.1/0.1ms | loop_work=4.1/4.2ms | sleep=29.3/29.4ms
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=0.0Hz obs=19.0KiB/s watchdog=4 cmd_drop=0 obs_drop=0 | cmd_poll=1.1/1.1ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=4.0/4.3ms | sleep=29.3/29.4ms
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=0.0Hz obs=19.0KiB/s watchdog=4 cmd_drop=0 obs_drop=0 | cmd_poll=1.1/1.1ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=4.1/4.5ms | sleep=29.3/29.4ms
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=0.0Hz obs=19.0KiB/s watchdog=4 cmd_drop=0 obs_drop=0 | cmd_poll=1.1/1.1ms | get_observation=2.9/3.0ms | send_observation=0.0/0.1ms | loop_work=4.0/4.4ms | sleep=29.3/29.4ms
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=0.0Hz obs=19.0KiB/s watchdog=4 cmd_drop=0 obs_drop=0 | cmd_poll=1.1/1.1ms | get_observation=2.9/3.0ms | send_observation=0.0/0.1ms | loop_work=4.0/4.3ms | sleep=29.3/29.4ms
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=0.0Hz obs=19.0KiB/s watchdog=4 cmd_drop=0 obs_drop=0 | cmd_poll=1.1/1.1ms | get_observation=2.9/3.1ms | send_observation=0.0/0.1ms | loop_work=4.0/4.2ms | sleep=29.3/29.4ms
+WARNING:__main__:Watchdog timeout - stopping base motors
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=28.9Hz obs=19.3KiB/s watchdog=1 cmd_drop=0 obs_drop=0 | cmd_poll=0.1/1.1ms | recv_cmd=0.1/0.3ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/4.3ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.0KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.5/3.7ms | sleep=29.9/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.0KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.5/3.7ms | sleep=29.8/30.0ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.2KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.1ms | send_observation=0.1/0.1ms | loop_work=3.6/3.8ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.7KiB/s watchdog=0 cmd_drop=1 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.8KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.8KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.7KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.7KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.8ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.9KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.8ms | sleep=29.8/30.0ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.5KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.7KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.7KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.8ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.6KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.1ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.7KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.1ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.8KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.9ms | sleep=29.8/30.0ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.8KiB/s watchdog=0 cmd_drop=1 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.1ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.4Hz obs=19.7KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/1.1ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/4.0ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.7KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.8KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.1ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.6KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/30.0ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.7KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.1ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.9ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.8KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.2ms | send_observation=0.1/0.1ms | loop_work=3.6/3.8ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.8KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.8KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.5/3.7ms | sleep=29.9/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.6KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.6KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.8ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.0KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.1ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.7ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.9ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.7KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.1ms | send_observation=0.1/0.1ms | loop_work=3.6/3.8ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.5KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.8ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.6KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.1ms | send_observation=0.1/0.1ms | loop_work=3.6/3.8ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.3KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.8ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=19.6KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.0KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.0KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.5/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.0KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.1ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/30.0ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.4KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.1ms | send_observation=0.1/0.1ms | loop_work=3.6/3.8ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.3KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.1ms | send_observation=0.1/0.1ms | loop_work=3.6/3.8ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.1KiB/s watchdog=0 cmd_drop=1 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.5KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.1ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.4KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.1ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.3KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.2KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.8ms | sleep=29.8/30.0ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.4KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.4Hz obs=20.4KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/1.1ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/4.0ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.4KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.3KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.4Hz obs=20.3KiB/s watchdog=0 cmd_drop=2 obs_drop=0 | cmd_poll=0.0/1.1ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/4.2ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.3KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.3KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.5/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.3KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.3KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.3KiB/s watchdog=0 cmd_drop=1 obs_drop=0 | cmd_poll=0.0/0.2ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.4Hz obs=20.4KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/1.1ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/4.0ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.5KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.1ms | send_observation=0.1/0.1ms | loop_work=3.6/3.8ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.6KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.7ms | get_observation=2.9/3.1ms | send_observation=0.1/0.1ms | loop_work=3.6/4.0ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.4Hz obs=20.5KiB/s watchdog=0 cmd_drop=1 obs_drop=0 | cmd_poll=0.0/1.1ms | recv_cmd=0.0/0.2ms | process_cmd=0.4/1.4ms | get_observation=2.9/5.9ms | send_observation=0.0/0.2ms | loop_work=3.5/6.8ms | sleep=29.9/30.1ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.3KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.0/0.1ms | process_cmd=0.4/0.5ms | get_observation=2.8/2.9ms | send_observation=0.1/0.1ms | loop_work=3.4/3.5ms | sleep=30.0/30.1ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.3KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.0/0.1ms | loop_work=3.5/3.8ms | sleep=29.9/30.1ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.2KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.8ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.3KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.1ms | send_observation=0.1/0.1ms | loop_work=3.6/3.8ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.3KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.3KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.1ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.2KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.3ms | send_observation=0.1/0.1ms | loop_work=3.6/3.9ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.5KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=29.9Hz obs=20.3KiB/s watchdog=0 cmd_drop=0 obs_drop=0 | cmd_poll=0.0/0.0ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.6/3.7ms | sleep=29.8/29.9ms
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=13.0Hz obs=20.1KiB/s watchdog=2 cmd_drop=0 obs_drop=0 | cmd_poll=0.6/1.1ms | recv_cmd=0.1/0.1ms | process_cmd=0.5/0.6ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=3.8/4.4ms | sleep=29.6/29.9ms
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=0.0Hz obs=8.3KiB/s watchdog=4 cmd_drop=0 obs_drop=35 | cmd_poll=1.1/1.1ms | get_observation=2.9/3.1ms | send_observation=0.1/0.1ms | loop_work=4.1/4.5ms | sleep=29.3/29.4ms
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+[host avg/max over 2.0s, target=33.3ms] loop=29.9Hz cmd=0.0Hz obs=0.0KiB/s watchdog=4 cmd_drop=0 obs_drop=60 | cmd_poll=1.1/1.1ms | get_observation=2.9/3.0ms | send_observation=0.1/0.1ms | loop_work=4.1/4.4ms | sleep=29.3/29.4ms
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+WARNING:__main__:Watchdog timeout - stopping base motors
+^C(lerobot) pi@raspberrypi:~/code/lerobot $
+
+## Mac ##
+(lerobot) (base)  MartinShin@Marz-MacBook-Pro  ~/code/robotics/lerobot/examples/phone_to_so100/keyboard_phone_to_xlerobot   test_xlerobot  python teleoperate.py --profile-latency --profile-phone-stream --profile-every-n 60
+
+matplotlib not found - hebi.util.plot_logs and hebi.util.plot_trajectory will not work.
+WARNING: Robot has the following self collisions in neutral position:
+  -base_link_2 collides with shoulder_link_2
+  -shoulder_link_0 collides with upper_arm_link_1
+  -upper_arm_link_0 collides with lower_arm_link_0
+  -lower_arm_link_2 collides with wrist_link_1
+  -wrist_link_0 collides with gripper_link_1
+  -gripper_link_0 collides with moving_jaw_so101_v1_link_0
+WARNING: Robot has the following self collisions in neutral position:
+  -base_link_2 collides with shoulder_link_2
+  -shoulder_link_0 collides with upper_arm_link_1
+  -upper_arm_link_0 collides with lower_arm_link_0
+  -lower_arm_link_2 collides with wrist_link_1
+  -wrist_link_0 collides with gripper_link_1
+  -gripper_link_0 collides with moving_jaw_so101_v1_link_0
+Connect/calibrate the left Android phone on port 4443.
+Server started at 0.0.0.0:4443
+Hold the phone so that: top edge points forward in same direction as the robot (robot +x) and screen points up (robot +z)
+Tap Start in the WebXR page, then press and hold 'Hold to Move' to capture this pose...
+
+Waiting for Android WebXR pose: tap Start and allow the browser AR/session prompts...
+INFO:teleop:Server started at 0.0.0.0:4443
+The phone web app should be available at https://10.5.0.2:4443
+INFO:teleop:The phone web app should be available at https://10.5.0.2:4443
+Waiting for Android WebXR pose: tap Start and allow the browser AR/session prompts...
+Client connected
+INFO:teleop:Client connected
+Waiting for Android WebXR pose: tap Start and allow the browser AR/session prompts...
+Waiting for Android WebXR pose: tap Start and allow the browser AR/session prompts...
+[android:4443 stream] rate=0.1Hz move=0% interval_avg/max=0.0/0.0ms
+Waiting for Android calibration trigger: hold the web UI 'Hold to Move' button...
+[android:4443 stream] rate=30.2Hz move=0% interval_avg/max=33.7/39.4ms
+Calibration done
+
+Connect/calibrate the right Android phone on port 4444.
+Server started at 0.0.0.0:4444
+Hold the phone so that: top edge points forward in same direction as the robot (robot +x) and screen points up (robot +z)
+Tap Start in the WebXR page, then press and hold 'Hold to Move' to capture this pose...
+
+Waiting for Android WebXR pose: tap Start and allow the browser AR/session prompts...
+Server started at 0.0.0.0:4444
+INFO:teleop:Server started at 0.0.0.0:4444
+The phone web app should be available at https://10.5.0.2:4444
+The phone web app should be available at https://10.5.0.2:4444
+INFO:teleop:The phone web app should be available at https://10.5.0.2:4444
+[android:4443 stream] rate=30.0Hz move=39% interval_avg/max=33.9/44.1ms
+Waiting for Android WebXR pose: tap Start and allow the browser AR/session prompts...
+[android:4443 stream] rate=29.9Hz move=0% interval_avg/max=34.0/44.7ms
+Waiting for Android WebXR pose: tap Start and allow the browser AR/session prompts...
+Client connected
+Client connected
+INFO:teleop:Client connected
+[android:4443 stream] rate=30.0Hz move=0% interval_avg/max=33.9/45.7ms
+Waiting for Android WebXR pose: tap Start and allow the browser AR/session prompts...
+Waiting for Android WebXR pose: tap Start and allow the browser AR/session prompts...
+[android:4444 stream] rate=0.0Hz move=0% interval_avg/max=0.0/0.0ms
+Waiting for Android calibration trigger: hold the web UI 'Hold to Move' button...
+[android:4444 stream] rate=23.3Hz move=0% interval_avg/max=43.8/98.3ms
+Waiting for Android calibration trigger: hold the web UI 'Hold to Move' button...
+Calibration done
+
+
+XLeRobot two-phone teleoperation
+Android phone #1: left arm, hold Move to enable
+Android phone #2: right arm, hold Move to enable
+Keyboard base:
+  i/k: forward/backward
+  u/o: rotate left/right
+  n/m: speed up/down
+  b: quit
+Keyboard head:
+  </>: head_motor_1 +/-
+  ,/.: head_motor_2 +/-
+  ?: set head targets to zero
+Keyboard reset:
+  1: reset left arm to startup pose
+  2: reset right arm to startup pose
+
+[android:4443 poll] stale_for=7.5s pose=True last_move=False
+[android:4444 stream] rate=24.4Hz move=18% interval_avg/max=41.9/87.3ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=3.8/16.0ms | left_phone=0.3/0.5ms | right_phone=0.1/0.2ms | keyboard=0.0/0.1ms | left_arm=0.0/0.1ms | right_arm=0.1/1.1ms | head_base=0.1/0.1ms | send_action=0.2/0.3ms | loop_work=4.7/16.9ms | sleep=28.7/32.6ms
+[android:4443 poll] stale_for=9.6s pose=True last_move=False
+[android:4444 stream] rate=24.1Hz move=0% interval_avg/max=42.3/82.9ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.4/0.7ms | left_phone=0.3/1.4ms | right_phone=0.1/0.2ms | keyboard=0.0/0.0ms | left_arm=0.0/0.0ms | right_arm=0.0/0.0ms | head_base=0.1/0.2ms | send_action=0.2/0.4ms | loop_work=1.1/2.6ms | sleep=32.3/33.1ms
+[android:4443 poll] stale_for=11.6s pose=True last_move=False
+[android:4444 stream] rate=24.3Hz move=0% interval_avg/max=42.0/81.1ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.4/0.7ms | left_phone=0.3/0.6ms | right_phone=0.1/0.2ms | keyboard=0.0/0.0ms | left_arm=0.0/0.0ms | right_arm=0.0/0.0ms | head_base=0.1/0.1ms | send_action=0.2/0.5ms | loop_work=1.0/1.6ms | sleep=32.3/32.9ms
+[android:4443 poll] stale_for=13.6s pose=True last_move=False
+[android:4444 stream] rate=24.0Hz move=0% interval_avg/max=42.6/80.5ms
+Pose jump detected, resetting the pose
+Pose jump detected, resetting the pose
+WARNING:teleop:Pose jump detected, resetting the pose
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.4/0.5ms | left_phone=0.2/0.5ms | right_phone=0.1/0.2ms | keyboard=0.0/0.0ms | left_arm=0.0/0.0ms | right_arm=0.2/0.9ms | head_base=0.0/0.1ms | send_action=0.1/0.4ms | loop_work=1.2/2.3ms | sleep=32.2/32.9ms
+[android:4443 poll] stale_for=15.6s pose=True last_move=False
+[android:4444 stream] rate=23.5Hz move=77% interval_avg/max=43.5/99.6ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.3/0.6ms | left_phone=0.2/0.4ms | right_phone=0.1/0.2ms | keyboard=0.0/0.1ms | left_arm=0.0/0.1ms | right_arm=0.5/1.0ms | head_base=0.0/0.1ms | send_action=0.1/0.6ms | loop_work=1.4/2.7ms | sleep=31.9/32.7ms
+[android:4443 poll] stale_for=17.6s pose=True last_move=False
+[android:4444 stream] rate=23.5Hz move=100% interval_avg/max=43.5/81.7ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.3/0.7ms | left_phone=0.2/0.4ms | right_phone=0.1/0.2ms | keyboard=0.0/0.1ms | left_arm=0.0/0.0ms | right_arm=0.6/1.2ms | head_base=0.0/0.1ms | send_action=0.2/0.9ms | loop_work=1.6/2.8ms | sleep=31.8/32.8ms
+[android:4443 poll] stale_for=19.6s pose=True last_move=False
+[android:4444 stream] rate=24.7Hz move=100% interval_avg/max=41.3/92.6ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.3/0.6ms | left_phone=0.3/0.4ms | right_phone=0.1/0.6ms | keyboard=0.0/0.1ms | left_arm=0.0/0.1ms | right_arm=0.6/0.9ms | head_base=0.0/0.2ms | send_action=0.2/0.7ms | loop_work=1.7/2.9ms | sleep=31.6/32.7ms
+[android:4443 poll] stale_for=21.6s pose=True last_move=False
+[android:4444 stream] rate=23.2Hz move=100% interval_avg/max=44.1/99.3ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.4/1.0ms | left_phone=0.3/0.4ms | right_phone=0.1/0.2ms | keyboard=0.0/0.0ms | left_arm=0.0/0.1ms | right_arm=0.6/0.9ms | head_base=0.0/0.1ms | send_action=0.2/0.9ms | loop_work=1.8/3.0ms | sleep=31.6/32.7ms
+[android:4443 poll] stale_for=23.6s pose=True last_move=False
+[android:4444 stream] rate=23.7Hz move=100% interval_avg/max=43.1/81.5ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.4/0.5ms | left_phone=0.3/0.4ms | right_phone=0.1/0.2ms | keyboard=0.0/0.0ms | left_arm=0.0/0.1ms | right_arm=0.7/1.2ms | head_base=0.0/0.1ms | send_action=0.2/0.8ms | loop_work=1.7/2.5ms | sleep=31.6/32.7ms
+[android:4443 poll] stale_for=25.6s pose=True last_move=False
+[android:4444 stream] rate=23.9Hz move=100% interval_avg/max=42.6/82.8ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.4/0.5ms | left_phone=0.3/0.5ms | right_phone=0.1/0.3ms | keyboard=0.0/0.0ms | left_arm=0.0/0.0ms | right_arm=0.7/1.2ms | head_base=0.0/0.1ms | send_action=0.2/0.8ms | loop_work=1.8/2.5ms | sleep=31.6/32.8ms
+[android:4443 poll] stale_for=27.6s pose=True last_move=False
+[android:4444 stream] rate=24.2Hz move=100% interval_avg/max=42.2/80.3ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.4/0.6ms | left_phone=0.3/0.4ms | right_phone=0.1/0.2ms | keyboard=0.0/0.1ms | left_arm=0.0/0.1ms | right_arm=0.7/1.7ms | head_base=0.1/0.3ms | send_action=0.3/3.3ms | loop_work=1.9/5.0ms | sleep=31.5/33.2ms
+[android:4443 poll] stale_for=29.6s pose=True last_move=False
+[android:4444 stream] rate=24.0Hz move=100% interval_avg/max=42.5/82.9ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.5/1.1ms | left_phone=0.3/1.0ms | right_phone=0.2/0.4ms | keyboard=0.0/0.1ms | left_arm=0.0/0.1ms | right_arm=0.7/1.0ms | head_base=0.0/0.1ms | send_action=0.2/0.3ms | loop_work=1.9/3.0ms | sleep=31.4/32.7ms
+[android:4443 poll] stale_for=31.6s pose=True last_move=False
+[android:4444 stream] rate=24.7Hz move=100% interval_avg/max=41.3/83.1ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.4/0.5ms | left_phone=0.3/0.5ms | right_phone=0.1/0.2ms | keyboard=0.0/0.1ms | left_arm=0.0/0.1ms | right_arm=0.6/1.0ms | head_base=0.0/0.1ms | send_action=0.2/0.2ms | loop_work=1.7/2.2ms | sleep=31.7/32.7ms
+[android:4443 poll] stale_for=33.6s pose=True last_move=False
+[android:4444 stream] rate=23.7Hz move=100% interval_avg/max=43.1/79.6ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.4/0.7ms | left_phone=0.3/0.6ms | right_phone=0.1/0.2ms | keyboard=0.0/0.0ms | left_arm=0.0/0.0ms | right_arm=0.6/1.0ms | head_base=0.0/0.1ms | send_action=0.2/0.3ms | loop_work=1.6/2.4ms | sleep=31.7/32.7ms
+[android:4443 poll] stale_for=35.6s pose=True last_move=False
+[android:4444 stream] rate=23.6Hz move=100% interval_avg/max=43.2/80.9ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.3/0.5ms | left_phone=0.2/0.4ms | right_phone=0.1/0.2ms | keyboard=0.0/0.1ms | left_arm=0.0/0.1ms | right_arm=0.6/0.9ms | head_base=0.0/0.1ms | send_action=0.2/0.3ms | loop_work=1.5/2.2ms | sleep=31.8/32.8ms
+[android:4443 poll] stale_for=37.6s pose=True last_move=False
+[android:4444 stream] rate=23.4Hz move=100% interval_avg/max=43.6/81.0ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.4/1.6ms | left_phone=0.2/0.4ms | right_phone=0.1/0.2ms | keyboard=0.0/0.1ms | left_arm=0.0/0.0ms | right_arm=0.5/0.9ms | head_base=0.0/0.1ms | send_action=0.1/0.3ms | loop_work=1.5/2.6ms | sleep=31.9/32.7ms
+[android:4443 poll] stale_for=39.6s pose=True last_move=False
+[android:4444 stream] rate=24.2Hz move=100% interval_avg/max=42.1/81.9ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.4/2.8ms | left_phone=0.2/0.4ms | right_phone=0.1/0.2ms | keyboard=0.0/0.1ms | left_arm=0.0/0.1ms | right_arm=0.6/1.0ms | head_base=0.0/0.2ms | send_action=0.2/0.5ms | loop_work=1.7/3.7ms | sleep=31.6/32.9ms
+[android:4443 poll] stale_for=41.6s pose=True last_move=False
+[android:4444 stream] rate=24.2Hz move=100% interval_avg/max=42.2/80.5ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.5/4.5ms | left_phone=0.3/0.5ms | right_phone=0.1/0.3ms | keyboard=0.0/0.0ms | left_arm=0.0/0.0ms | right_arm=0.7/2.4ms | head_base=0.0/0.1ms | send_action=0.2/1.1ms | loop_work=1.9/6.4ms | sleep=31.5/32.7ms
+[android:4443 poll] stale_for=43.6s pose=True last_move=False
+[android:4444 stream] rate=24.1Hz move=100% interval_avg/max=42.4/85.1ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.4/3.8ms | left_phone=0.3/0.8ms | right_phone=0.1/0.3ms | keyboard=0.0/0.0ms | left_arm=0.0/0.0ms | right_arm=0.6/1.0ms | head_base=0.0/0.1ms | send_action=0.2/0.9ms | loop_work=1.8/5.0ms | sleep=31.6/32.7ms
+[android:4443 poll] stale_for=45.6s pose=True last_move=False
+[android:4444 stream] rate=24.1Hz move=100% interval_avg/max=42.3/83.9ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.5/6.2ms | left_phone=0.3/0.5ms | right_phone=0.1/0.3ms | keyboard=0.0/0.0ms | left_arm=0.0/0.0ms | right_arm=0.7/1.0ms | head_base=0.0/0.1ms | send_action=0.2/0.8ms | loop_work=2.0/8.0ms | sleep=31.4/33.0ms
+[android:4443 poll] stale_for=47.6s pose=True last_move=False
+[android:4444 stream] rate=24.1Hz move=100% interval_avg/max=42.4/87.5ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=1.0/9.1ms | left_phone=0.3/0.6ms | right_phone=0.1/0.3ms | keyboard=0.0/0.0ms | left_arm=0.0/0.1ms | right_arm=0.7/1.9ms | head_base=0.0/0.1ms | send_action=0.2/0.3ms | loop_work=2.4/10.8ms | sleep=31.0/32.6ms
+[android:4443 poll] stale_for=49.6s pose=True last_move=False
+[android:4444 stream] rate=23.4Hz move=100% interval_avg/max=43.6/80.0ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.9/11.3ms | left_phone=0.3/0.5ms | right_phone=0.1/0.2ms | keyboard=0.0/0.1ms | left_arm=0.0/0.1ms | right_arm=0.6/1.0ms | head_base=0.0/0.1ms | send_action=0.2/0.5ms | loop_work=2.1/13.2ms | sleep=31.2/32.7ms
+[android:4443 poll] stale_for=51.6s pose=True last_move=False
+[android:4444 stream] rate=24.2Hz move=100% interval_avg/max=42.3/83.2ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.9/11.2ms | left_phone=0.2/0.4ms | right_phone=0.1/0.2ms | keyboard=0.0/0.0ms | left_arm=0.0/0.0ms | right_arm=0.6/1.6ms | head_base=0.1/0.5ms | send_action=0.2/0.7ms | loop_work=2.2/12.8ms | sleep=31.2/32.8ms
+[android:4443 poll] stale_for=53.6s pose=True last_move=False
+[android:4444 stream] rate=24.1Hz move=100% interval_avg/max=42.3/82.2ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=1.1/10.8ms | left_phone=0.3/0.8ms | right_phone=0.1/0.4ms | keyboard=0.0/0.1ms | left_arm=0.0/0.2ms | right_arm=0.7/2.1ms | head_base=0.0/0.3ms | send_action=0.2/0.6ms | loop_work=2.6/11.8ms | sleep=30.8/32.7ms
+[android:4443 poll] stale_for=55.6s pose=True last_move=False
+[android:4444 stream] rate=23.6Hz move=100% interval_avg/max=43.2/83.6ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.9/14.5ms | left_phone=0.3/0.6ms | right_phone=0.1/0.3ms | keyboard=0.0/0.1ms | left_arm=0.0/0.1ms | right_arm=0.6/1.0ms | head_base=0.0/0.1ms | send_action=0.2/0.6ms | loop_work=2.1/16.3ms | sleep=31.3/33.3ms
+[android:4443 poll] stale_for=57.6s pose=True last_move=False
+[android:4444 stream] rate=23.8Hz move=100% interval_avg/max=42.9/87.0ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=1.0/9.3ms | left_phone=0.2/0.4ms | right_phone=0.1/0.3ms | keyboard=0.0/0.1ms | left_arm=0.0/0.1ms | right_arm=0.6/1.0ms | head_base=0.0/0.1ms | send_action=0.2/0.6ms | loop_work=2.2/10.8ms | sleep=31.2/32.8ms
+[android:4443 poll] stale_for=59.6s pose=True last_move=False
+[android:4444 stream] rate=24.0Hz move=100% interval_avg/max=42.6/90.2ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.9/9.7ms | left_phone=0.2/0.5ms | right_phone=0.1/0.2ms | keyboard=0.0/0.0ms | left_arm=0.0/0.0ms | right_arm=0.6/1.0ms | head_base=0.0/0.1ms | send_action=0.2/1.6ms | loop_work=2.2/12.8ms | sleep=31.2/32.8ms
+[android:4443 poll] stale_for=61.6s pose=True last_move=False
+[android:4444 stream] rate=24.3Hz move=100% interval_avg/max=42.0/88.7ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=1.7/14.6ms | left_phone=0.2/0.4ms | right_phone=0.1/0.4ms | keyboard=0.0/0.1ms | left_arm=0.0/0.0ms | right_arm=0.6/1.1ms | head_base=0.0/0.1ms | send_action=0.2/0.5ms | loop_work=3.0/15.6ms | sleep=30.4/32.7ms
+[android:4443 poll] stale_for=63.7s pose=True last_move=False
+[android:4444 stream] rate=24.0Hz move=100% interval_avg/max=42.6/83.6ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=1.2/14.7ms | left_phone=0.3/0.4ms | right_phone=0.1/0.3ms | keyboard=0.0/0.1ms | left_arm=0.0/0.1ms | right_arm=0.7/1.6ms | head_base=0.0/0.1ms | send_action=0.2/0.7ms | loop_work=2.7/16.5ms | sleep=30.7/32.6ms
+[android:4443 poll] stale_for=65.7s pose=True last_move=False
+[android:4444 stream] rate=24.1Hz move=80% interval_avg/max=42.3/84.8ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=1.1/10.7ms | left_phone=0.3/0.4ms | right_phone=0.1/0.2ms | keyboard=0.0/0.0ms | left_arm=0.0/0.0ms | right_arm=0.3/0.9ms | head_base=0.1/0.2ms | send_action=0.2/0.3ms | loop_work=2.1/11.5ms | sleep=31.3/32.9ms
+[android:4443 poll] stale_for=67.7s pose=True last_move=False
+[android:4444 stream] rate=23.8Hz move=0% interval_avg/max=42.8/84.0ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=1.3/12.2ms | left_phone=0.3/0.5ms | right_phone=0.1/0.4ms | keyboard=0.0/0.1ms | left_arm=0.0/0.0ms | right_arm=0.0/0.0ms | head_base=0.1/0.1ms | send_action=0.2/0.3ms | loop_work=2.1/13.1ms | sleep=31.3/32.8ms
+[android:4443 poll] stale_for=69.7s pose=True last_move=False
+[android:4444 stream] rate=24.3Hz move=0% interval_avg/max=42.0/84.5ms
+[android:4443 stream] rate=0.1Hz move=0% interval_avg/max=10234.8/71409.7ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=1.7/13.7ms | left_phone=0.3/0.8ms | right_phone=0.1/0.5ms | keyboard=0.0/0.1ms | left_arm=0.0/0.1ms | right_arm=0.0/0.0ms | head_base=0.1/0.2ms | send_action=0.2/2.1ms | loop_work=2.5/14.9ms | sleep=30.9/33.0ms
+Pose jump detected, resetting the pose
+Pose jump detected, resetting the pose
+WARNING:teleop:Pose jump detected, resetting the pose
+[android:4444 poll] stale_for=2.0s pose=True last_move=False
+[android:4443 stream] rate=29.6Hz move=30% interval_avg/max=34.3/72.7ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=2.1/11.5ms | left_phone=0.3/0.8ms | right_phone=0.1/0.4ms | keyboard=0.0/0.2ms | left_arm=0.3/1.9ms | right_arm=0.0/0.0ms | head_base=0.1/0.3ms | send_action=0.2/0.8ms | loop_work=3.2/12.2ms | sleep=30.2/32.9ms
+[android:4444 poll] stale_for=4.0s pose=True last_move=False
+[android:4443 stream] rate=30.0Hz move=100% interval_avg/max=33.9/42.4ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=3.2/16.6ms | left_phone=0.3/1.2ms | right_phone=0.1/0.3ms | keyboard=0.0/0.1ms | left_arm=0.7/1.0ms | right_arm=0.0/0.0ms | head_base=0.0/0.1ms | send_action=0.2/0.5ms | loop_work=4.6/18.2ms | sleep=28.8/32.2ms
+[android:4444 poll] stale_for=6.0s pose=True last_move=False
+[android:4443 stream] rate=30.0Hz move=100% interval_avg/max=33.9/39.9ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=3.3/16.3ms | left_phone=0.2/0.5ms | right_phone=0.1/0.5ms | keyboard=0.0/0.2ms | left_arm=0.6/1.2ms | right_arm=0.0/0.1ms | head_base=0.0/0.1ms | send_action=0.2/0.9ms | loop_work=4.5/18.4ms | sleep=28.8/32.6ms
+[android:4444 poll] stale_for=8.1s pose=True last_move=False
+[android:4443 stream] rate=30.0Hz move=100% interval_avg/max=33.9/39.9ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.4/1.8ms | left_phone=0.2/0.4ms | right_phone=0.1/0.6ms | keyboard=0.0/0.0ms | left_arm=0.6/3.5ms | right_arm=0.0/0.0ms | head_base=0.0/0.1ms | send_action=0.2/1.8ms | loop_work=1.7/5.3ms | sleep=31.7/32.8ms
+[android:4444 poll] stale_for=10.1s pose=True last_move=False
+[android:4443 stream] rate=29.9Hz move=100% interval_avg/max=34.0/45.4ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.3/0.5ms | left_phone=0.2/0.4ms | right_phone=0.1/0.3ms | keyboard=0.0/0.0ms | left_arm=0.6/1.0ms | right_arm=0.0/0.0ms | head_base=0.0/0.1ms | send_action=0.1/0.3ms | loop_work=1.5/2.5ms | sleep=31.9/32.5ms
+[android:4444 poll] stale_for=12.1s pose=True last_move=False
+[android:4443 stream] rate=30.1Hz move=100% interval_avg/max=33.8/43.2ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.3/0.5ms | left_phone=0.2/0.4ms | right_phone=0.1/0.2ms | keyboard=0.0/0.0ms | left_arm=0.6/1.0ms | right_arm=0.0/0.0ms | head_base=0.0/0.1ms | send_action=0.2/0.6ms | loop_work=1.5/2.6ms | sleep=31.9/32.7ms
+[android:4444 poll] stale_for=14.1s pose=True last_move=False
+[android:4443 stream] rate=29.9Hz move=100% interval_avg/max=34.0/54.7ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.4/0.7ms | left_phone=0.2/0.4ms | right_phone=0.1/0.2ms | keyboard=0.0/0.1ms | left_arm=0.6/1.1ms | right_arm=0.0/0.0ms | head_base=0.0/0.1ms | send_action=0.2/0.9ms | loop_work=1.7/3.2ms | sleep=31.7/32.7ms
+[android:4444 poll] stale_for=16.1s pose=True last_move=False
+[android:4443 stream] rate=30.0Hz move=100% interval_avg/max=33.9/40.6ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.4/1.1ms | left_phone=0.3/0.5ms | right_phone=0.1/0.3ms | keyboard=0.0/0.1ms | left_arm=0.7/1.0ms | right_arm=0.0/0.1ms | head_base=0.0/0.1ms | send_action=0.3/0.9ms | loop_work=1.8/3.0ms | sleep=31.5/32.6ms
+[android:4444 poll] stale_for=18.1s pose=True last_move=False
+[android:4443 stream] rate=30.0Hz move=100% interval_avg/max=33.9/40.1ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.4/0.7ms | left_phone=0.2/0.4ms | right_phone=0.1/0.2ms | keyboard=0.0/0.1ms | left_arm=0.6/1.0ms | right_arm=0.0/0.0ms | head_base=0.0/0.1ms | send_action=0.2/0.7ms | loop_work=1.7/2.7ms | sleep=31.7/32.8ms
+[android:4444 poll] stale_for=20.1s pose=True last_move=False
+[android:4443 stream] rate=30.0Hz move=100% interval_avg/max=34.0/45.8ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.3/0.5ms | left_phone=0.2/0.4ms | right_phone=0.1/0.2ms | keyboard=0.0/0.0ms | left_arm=0.6/0.9ms | right_arm=0.0/0.0ms | head_base=0.0/0.1ms | send_action=0.2/0.6ms | loop_work=1.7/2.3ms | sleep=31.7/32.6ms
+[android:4444 poll] stale_for=22.1s pose=True last_move=False
+[android:4443 stream] rate=30.0Hz move=100% interval_avg/max=33.8/41.6ms
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.3/0.5ms | left_phone=0.2/0.4ms | right_phone=0.1/0.2ms | keyboard=0.0/0.0ms | left_arm=0.7/1.1ms | right_arm=0.0/0.0ms | head_base=0.1/0.1ms | send_action=0.2/0.3ms | loop_work=1.7/2.4ms | sleep=31.7/32.7ms
+[android:4444 poll] stale_for=24.1s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.4/0.6ms | left_phone=0.3/0.4ms | right_phone=0.1/0.2ms | keyboard=0.0/0.1ms | left_arm=0.7/0.9ms | right_arm=0.0/0.0ms | head_base=0.0/0.1ms | send_action=0.2/0.4ms | loop_work=1.7/2.4ms | sleep=31.7/32.7ms
+[android:4443 stream] rate=30.0Hz move=100% interval_avg/max=33.8/43.8ms
+[android:4444 poll] stale_for=26.1s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.4/0.5ms | left_phone=0.3/0.4ms | right_phone=0.1/1.4ms | keyboard=0.0/0.1ms | left_arm=0.7/1.2ms | right_arm=0.0/0.1ms | head_base=0.0/0.1ms | send_action=0.2/0.7ms | loop_work=1.7/3.0ms | sleep=31.6/32.7ms
+[android:4443 stream] rate=29.9Hz move=100% interval_avg/max=34.0/41.5ms
+[android:4444 poll] stale_for=28.1s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.4/0.6ms | left_phone=0.3/0.4ms | right_phone=0.2/1.2ms | keyboard=0.0/0.0ms | left_arm=0.9/2.0ms | right_arm=0.0/0.1ms | head_base=0.1/0.2ms | send_action=0.2/0.5ms | loop_work=2.0/4.0ms | sleep=31.3/32.8ms
+[android:4443 stream] rate=30.0Hz move=100% interval_avg/max=33.9/44.8ms
+[android:4444 poll] stale_for=30.1s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.6/2.8ms | left_phone=0.4/0.8ms | right_phone=0.2/1.0ms | keyboard=0.0/0.2ms | left_arm=0.7/2.0ms | right_arm=0.0/0.0ms | head_base=0.0/0.2ms | send_action=0.2/0.4ms | loop_work=2.1/3.9ms | sleep=31.3/32.8ms
+[android:4443 stream] rate=29.9Hz move=100% interval_avg/max=34.0/50.0ms
+[android:4444 poll] stale_for=32.1s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.3/0.5ms | left_phone=0.2/0.4ms | right_phone=0.1/0.2ms | keyboard=0.0/0.0ms | left_arm=0.6/0.9ms | right_arm=0.0/0.0ms | head_base=0.0/0.1ms | send_action=0.1/0.3ms | loop_work=1.5/2.3ms | sleep=31.8/32.6ms
+[android:4443 stream] rate=30.0Hz move=100% interval_avg/max=33.9/113.7ms
+[android:4444 poll] stale_for=34.1s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.4/0.8ms | left_phone=0.2/0.4ms | right_phone=0.1/0.2ms | keyboard=0.0/0.1ms | left_arm=0.6/0.9ms | right_arm=0.0/0.0ms | head_base=0.0/0.1ms | send_action=0.1/0.3ms | loop_work=1.5/2.3ms | sleep=31.8/32.7ms
+[android:4443 stream] rate=30.1Hz move=100% interval_avg/max=33.8/79.5ms
+[android:4444 poll] stale_for=36.1s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.4/3.8ms | left_phone=0.2/0.4ms | right_phone=0.1/0.3ms | keyboard=0.0/0.0ms | left_arm=0.5/1.0ms | right_arm=0.0/0.0ms | head_base=0.0/0.1ms | send_action=0.1/0.2ms | loop_work=1.5/4.8ms | sleep=31.8/32.6ms
+[android:4443 stream] rate=30.0Hz move=100% interval_avg/max=33.9/48.8ms
+[android:4444 poll] stale_for=38.1s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.5/5.3ms | left_phone=0.2/0.4ms | right_phone=0.1/0.3ms | keyboard=0.0/0.1ms | left_arm=0.6/1.0ms | right_arm=0.0/0.1ms | head_base=0.0/0.1ms | send_action=0.1/0.2ms | loop_work=1.7/7.0ms | sleep=31.7/32.6ms
+[android:4443 stream] rate=29.9Hz move=100% interval_avg/max=34.0/50.0ms
+[android:4444 poll] stale_for=40.1s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.7/8.5ms | left_phone=0.2/0.5ms | right_phone=0.1/0.3ms | keyboard=0.0/0.1ms | left_arm=0.6/1.1ms | right_arm=0.0/0.1ms | head_base=0.0/0.1ms | send_action=0.2/0.8ms | loop_work=2.0/10.7ms | sleep=31.4/32.5ms
+[android:4443 stream] rate=30.0Hz move=100% interval_avg/max=33.8/41.4ms
+[android:4444 poll] stale_for=42.1s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.7/10.5ms | left_phone=0.3/0.4ms | right_phone=0.1/0.3ms | keyboard=0.0/0.1ms | left_arm=0.7/1.3ms | right_arm=0.0/0.0ms | head_base=0.1/0.3ms | send_action=0.2/0.7ms | loop_work=2.2/11.7ms | sleep=31.2/32.5ms
+[android:4443 stream] rate=29.9Hz move=100% interval_avg/max=34.0/39.8ms
+[android:4444 poll] stale_for=44.1s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.7/7.1ms | left_phone=0.3/0.6ms | right_phone=0.1/0.4ms | keyboard=0.0/0.1ms | left_arm=0.7/1.9ms | right_arm=0.0/0.2ms | head_base=0.0/0.3ms | send_action=0.2/0.9ms | loop_work=2.1/8.1ms | sleep=31.3/32.6ms
+[android:4443 stream] rate=30.0Hz move=100% interval_avg/max=33.9/44.2ms
+[android:4444 poll] stale_for=46.1s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.7/7.6ms | left_phone=0.2/0.4ms | right_phone=0.1/0.2ms | keyboard=0.0/0.0ms | left_arm=0.6/1.0ms | right_arm=0.0/0.3ms | head_base=0.1/0.2ms | send_action=0.2/0.8ms | loop_work=2.1/9.3ms | sleep=31.3/32.7ms
+[android:4443 stream] rate=30.1Hz move=100% interval_avg/max=33.8/42.1ms
+[android:4444 poll] stale_for=48.1s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=1.5/16.3ms | left_phone=0.3/0.4ms | right_phone=0.1/0.3ms | keyboard=0.0/0.1ms | left_arm=0.7/1.3ms | right_arm=0.0/0.1ms | head_base=0.0/0.2ms | send_action=0.2/0.6ms | loop_work=2.8/18.1ms | sleep=30.6/32.7ms
+[android:4443 stream] rate=29.9Hz move=100% interval_avg/max=34.1/42.0ms
+[android:4444 poll] stale_for=50.1s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.9/12.2ms | left_phone=0.3/0.5ms | right_phone=0.1/0.4ms | keyboard=0.0/0.1ms | left_arm=0.8/2.4ms | right_arm=0.0/0.1ms | head_base=0.1/0.3ms | send_action=0.3/1.1ms | loop_work=2.4/13.5ms | sleep=30.9/32.6ms
+[android:4443 stream] rate=29.9Hz move=100% interval_avg/max=34.1/45.6ms
+[android:4444 poll] stale_for=52.1s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=1.0/10.7ms | left_phone=0.3/1.2ms | right_phone=0.2/0.8ms | keyboard=0.0/0.1ms | left_arm=0.8/1.6ms | right_arm=0.0/0.1ms | head_base=0.1/0.1ms | send_action=0.2/0.6ms | loop_work=2.6/12.4ms | sleep=30.7/32.6ms
+[android:4443 stream] rate=30.2Hz move=100% interval_avg/max=33.7/42.4ms
+[android:4444 poll] stale_for=54.1s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=1.3/15.0ms | left_phone=0.2/0.5ms | right_phone=0.1/0.2ms | keyboard=0.0/0.1ms | left_arm=0.6/1.2ms | right_arm=0.0/0.0ms | head_base=0.0/0.1ms | send_action=0.2/0.3ms | loop_work=2.6/17.3ms | sleep=30.8/32.6ms
+[android:4443 stream] rate=29.9Hz move=100% interval_avg/max=34.0/40.9ms
+[android:4444 poll] stale_for=56.1s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.8/11.3ms | left_phone=0.2/0.5ms | right_phone=0.1/0.3ms | keyboard=0.0/0.1ms | left_arm=0.6/1.0ms | right_arm=0.0/0.0ms | head_base=0.0/0.1ms | send_action=0.2/1.7ms | loop_work=2.0/13.8ms | sleep=31.3/32.6ms
+[android:4443 stream] rate=30.0Hz move=100% interval_avg/max=33.8/49.2ms
+[android:4444 poll] stale_for=58.1s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=1.0/12.2ms | left_phone=0.2/0.5ms | right_phone=0.1/0.2ms | keyboard=0.0/0.0ms | left_arm=0.6/1.3ms | right_arm=0.0/0.1ms | head_base=0.0/0.1ms | send_action=0.1/0.5ms | loop_work=2.2/13.4ms | sleep=31.1/32.6ms
+[android:4443 stream] rate=30.0Hz move=100% interval_avg/max=33.9/38.3ms
+[android:4444 poll] stale_for=60.1s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=2.8/16.2ms | left_phone=0.2/0.4ms | right_phone=0.1/0.2ms | keyboard=0.0/0.0ms | left_arm=0.6/1.0ms | right_arm=0.0/0.0ms | head_base=0.0/0.1ms | send_action=0.1/0.4ms | loop_work=4.0/17.9ms | sleep=29.4/32.6ms
+[android:4443 stream] rate=30.0Hz move=100% interval_avg/max=33.9/42.1ms
+[android:4444 poll] stale_for=62.2s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=3.4/16.3ms | left_phone=0.2/0.5ms | right_phone=0.1/0.3ms | keyboard=0.0/0.1ms | left_arm=0.6/1.2ms | right_arm=0.0/0.1ms | head_base=0.0/0.1ms | send_action=0.1/0.2ms | loop_work=4.6/17.9ms | sleep=28.7/32.3ms
+[android:4443 stream] rate=30.0Hz move=100% interval_avg/max=33.9/45.9ms
+[android:4444 poll] stale_for=64.2s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.3/0.5ms | left_phone=0.2/0.3ms | right_phone=0.1/0.2ms | keyboard=0.0/0.0ms | left_arm=0.5/0.9ms | right_arm=0.0/0.0ms | head_base=0.0/0.1ms | send_action=0.1/0.2ms | loop_work=1.4/2.3ms | sleep=32.0/32.6ms
+[android:4443 stream] rate=30.0Hz move=100% interval_avg/max=33.9/44.1ms
+[android:4444 poll] stale_for=66.2s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.3/0.5ms | left_phone=0.2/0.4ms | right_phone=0.1/0.2ms | keyboard=0.0/0.1ms | left_arm=0.2/0.9ms | right_arm=0.0/0.0ms | head_base=0.0/0.1ms | send_action=0.1/0.3ms | loop_work=1.1/2.4ms | sleep=32.3/32.9ms
+[android:4443 stream] rate=30.0Hz move=18% interval_avg/max=33.9/44.4ms
+[android:4444 poll] stale_for=68.2s pose=True last_move=False
+[latency avg/max over 60 loops, target=33.3ms] robot_obs=0.3/0.6ms | left_phone=0.3/0.5ms | right_phone=0.1/0.2ms | keyboard=0.0/0.1ms | left_arm=0.0/0.1ms | right_arm=0.0/0.0ms | head_base=0.1/0.1ms | send_action=0.2/0.2ms | loop_work=1.0/1.8ms | sleep=32.3/33.1ms
+[android:4443 stream] rate=30.0Hz move=0% interval_avg/max=33.8/44.9ms
+bQuit requested by keyboard.
+[android:4443 stream] rate=29.9Hz move=0% interval_avg/max=34.0/39.3ms
+Teleoperation ended.

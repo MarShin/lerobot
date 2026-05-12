@@ -273,50 +273,70 @@ remote robot observation, polls two phones, runs two per-arm EE pipelines, solve
 remote action, and may log Rerun data every frame. If phone enable feels delayed or arm motion is sluggish,
 consider these speedups before changing phone axis mapping:
 
+### Current Finding
+
 - Current profiling says the Mac-side control loop is not the main bottleneck. `--profile-latency` usually
   shows `loop_work` around 1-2ms with most of the frame spent sleeping, while per-arm processing stays low.
-  The most suspicious part of the client path is the Android/WebXR stream behavior when the browser UI
-  appears to freeze or stop updating local stats.
+  The most suspicious remaining client-side problem is the Android/WebXR stream behavior when the browser UI
+  freezes or stops updating local stats.
 - Current host-side profiling says the Pi control loop is usually healthy once the Mac client is active, but
   observation sending can block hard when the client is not consuming observations during calibration or
   disconnect. The current host uses non-blocking observation sends with a low ZMQ high-water mark, so it
   drops observations instead of blocking the control loop when the Mac is not reading.
 - Each `Phone(...)` instance uses its own Android `Teleop` server and its own port. The current dual-phone
   script intentionally runs two separate web servers, one for each arm.
+- In the 2026-05-12 run log, the transport fix was correct: the old multi-second `send_observation` stall
+  disappeared, the host stayed near 30Hz, and the remaining failure mode was one Android phone stream going
+  stale while the other continued streaming.
+- Observed responsiveness impact, from highest to lowest: non-blocking host observation sends were the major
+  improvement; host command draining was a useful secondary latency guard; Rerun disabled/throttled is good
+  live-control hygiene; disabled-phone IK skipping appears minor for the current bottleneck and should remain
+  an A/B option.
 
-- Profile first with `--profile-latency` and compare the same rolling timing output after each change. The
-  script reports average/max timings for observation polling, phone reads, per-arm processing, command send,
-  Rerun logging, total loop work, and sleep headroom.
-- If the browser UI appears frozen, also run with `--profile-phone-stream` to see each Android server's
-  incoming WebXR callback rate and percentage of messages with `move=True`. If callbacks stop entirely, the
-  Mac polling side prints `[android:<port> poll] stale_for=...` so a frozen stream is visible even when the
-  callback-side rate reporter has gone silent.
-- To profile the Pi host, run `xlerobot_2wheels_host` with `--host.profile_diagnostics`. It reports host
+### Implemented
+
+- [x] Add Mac-side latency profiling. Use `--profile-latency` and compare the same rolling timing output
+  after each change. The script reports average/max timings for observation polling, phone reads, per-arm
+  processing, command send, Rerun logging, total loop work, and sleep headroom.
+- [x] Add Android stream profiling. Use `--profile-phone-stream` to see each Android server's incoming WebXR
+  callback rate and percentage of messages with `move=True`. If callbacks stop entirely, the Mac polling side
+  prints `[android:<port> poll] stale_for=...` so a frozen stream is visible even when the callback-side rate
+  reporter has gone silent.
+- [x] Add Pi host diagnostics. Run `xlerobot_2wheels_host` with `--host.profile_diagnostics`. It reports host
   loop rate, command rate, observation bandwidth, watchdog count, and average/max timings for command
   handling, `robot.get_observation()`, and observation serialization/send. It also reports `obs_drop` for
-  observations dropped because the Mac was not reading, and `cmd_drop` for queued stale commands skipped
-  when draining to the newest command.
-- Skip the per-arm EE/IK pipeline when that phone is disabled; hold or omit that arm's command instead of
-  recomputing FK and IK every loop. The current XLeRobot teleop script resets that arm's processor while the
-  phone is disabled, then sends a measured-joint hold command so the next enable press captures a fresh
-  latched reference.
-- Optimize `EEReferenceAndDelta(use_latched_reference=True)` so FK runs only when a reference pose is needed.
-  With latched reference enabled, the current implementation still computes FK at the start of every call.
-  Semantically, FK is only required on the enable rising edge when `reference_ee_pose` is captured, and once
-  before the first disabled hold command if no command has been latched yet. During continuous enabled motion,
-  target deltas are applied to the stored `reference_ee_pose`, so the measured current EE pose is not needed
-  for this step.
-- Seed live IK from the previous IK solution after enable instead of measured joints every frame, while still
-  resetting from measured joints on enable or after large tracking errors.
-- Move remote observation receiving into a background "latest observation" cache so the phone-action loop is
-  not blocked by ZMQ polling on every tick.
-- On the Pi host, drain queued ZMQ commands and execute only the newest command per host tick so stale commands
-  do not add perceived latency. This is implemented in the current host.
-- Throttle or disable `log_rerun_data(...)` during live responsiveness testing. The current XLeRobot teleop
-  script keeps Rerun off by default; use `--enable-rerun` and optionally `--rerun-log-every-n` when
+  observations dropped because the Mac was not reading, and `cmd_drop` for queued stale commands skipped when
+  draining to the newest command.
+- [x] Make disabled-phone EE/IK skipping configurable. By default, the XLeRobot teleop script preserves the
+  original behavior and still runs that arm's EE/IK pipeline while the phone is disabled. Use
+  `--skip-disabled-phone-ik` to test the optimized path that resets the processor and sends a measured-joint
+  hold command while disabled. This remains an A/B test option because the skip reduced avoidable work but did
+  not produce a large visible speedup by itself.
+- [x] Throttle or disable `log_rerun_data(...)` during live responsiveness testing. The current XLeRobot
+  teleop script keeps Rerun off by default; use `--enable-rerun` and optionally `--rerun-log-every-n` when
   visualization is needed.
-- Avoid sending full hold commands for inactive arms every tick if the robot-side controller can safely keep
-  torque/position without repeated command refresh.
+- [x] Make Pi host observation publishing non-blocking. The host now uses a low ZMQ high-water mark and drops
+  observations when the Mac is not reading instead of blocking the host loop.
+- [x] Drain queued ZMQ commands on the Pi host and execute only the newest command per host tick so stale
+  commands do not add perceived latency.
+
+### Pending
+
+- [ ] Debug Android/WebXR stream stalls. Current logs show one phone can stop delivering callbacks for tens
+  of seconds while the other phone continues streaming normally. This is now the highest-value next target.
+- [ ] Optimize `EEReferenceAndDelta(use_latched_reference=True)` so FK runs only when a reference pose is
+  needed. With latched reference enabled, the current implementation still computes FK at the start of every
+  call. Semantically, FK is only required on the enable rising edge when `reference_ee_pose` is captured, and
+  once before the first disabled hold command if no command has been latched yet. During continuous enabled
+  motion, target deltas are applied to the stored `reference_ee_pose`, so the measured current EE pose is not
+  needed for this step.
+- [ ] Seed live IK from the previous IK solution after enable instead of measured joints every frame, while
+  still resetting from measured joints on enable or after large tracking errors.
+- [ ] Move remote observation receiving into a background "latest observation" cache so the phone-action loop
+  is not blocked by ZMQ polling on every tick. Current profiling suggests this is not urgent because the
+  Mac-side loop usually has substantial sleep headroom.
+- [ ] Avoid sending full hold commands for inactive arms every tick if the robot-side controller can safely
+  keep torque/position without repeated command refresh.
 
 ## Common Edits
 

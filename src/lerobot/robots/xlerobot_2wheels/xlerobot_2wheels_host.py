@@ -156,11 +156,16 @@ class XLerobot2WheelsHost:
         
         # Command socket (PULL - receives commands)
         self.zmq_cmd_socket = self.zmq_context.socket(zmq.PULL)
+        # Keep command backlog short. The host loop drains this socket each tick
+        # and executes only the newest command so old teleop targets are skipped.
         self.zmq_cmd_socket.setsockopt(zmq.RCVHWM, 1)
         self.zmq_cmd_socket.bind(f"tcp://*:{self.host_config.port_zmq_cmd}")
         
         # Observation socket (PUSH - sends observations)
         self.zmq_observation_socket = self.zmq_context.socket(zmq.PUSH)
+        # Keep only a tiny outbound queue. If the Mac client is not reading
+        # observations during phone calibration/disconnect, drop frames instead
+        # of letting the robot-side control loop block behind stale data.
         self.zmq_observation_socket.setsockopt(zmq.SNDHWM, 1)
         self.zmq_observation_socket.setsockopt(zmq.SNDTIMEO, 0)
         self.zmq_observation_socket.bind(f"tcp://*:{self.host_config.port_zmq_observations}")
@@ -193,6 +198,9 @@ class XLerobot2WheelsHost:
                 if has_command:
                     try:
                         section_start = time.perf_counter()
+                        # Drain all queued commands and execute only the newest
+                        # one. This avoids replaying stale teleop targets after
+                        # a brief network or host-side delay.
                         cmd_string, drained_command_count = self._recv_latest_command()
                         cmd = json.loads(cmd_string)
                         profiler.record("recv_cmd", time.perf_counter() - section_start)
@@ -227,6 +235,8 @@ class XLerobot2WheelsHost:
                     if observation_sent:
                         profiler.add_observation_bytes(observation_bytes)
                     else:
+                        # Expected when the Mac is not currently consuming observations.
+                        # The newest future observation is more useful than blocking here.
                         profiler.increment_dropped_observation()
                 except Exception as e:
                     logger.error(f"Failed to get observation: {e}")
@@ -264,6 +274,8 @@ class XLerobot2WheelsHost:
         drained_count = 0
         while True:
             try:
+                # Keep overwriting until the queue is empty; the last message is
+                # the command closest to the current phone/keyboard state.
                 latest_cmd_string = self.zmq_cmd_socket.recv_string(zmq.NOBLOCK)
                 drained_count += 1
             except zmq.Again:
@@ -287,6 +299,8 @@ class XLerobot2WheelsHost:
             # Send observation
             obs_string = json.dumps(obs_for_transmission)
             obs_size = len(obs_string)
+            # Non-blocking send is intentional: teleop should prefer dropping an
+            # observation over pausing motor command handling on the Pi.
             self.zmq_observation_socket.send_string(obs_string, flags=zmq.NOBLOCK)
             return obs_size, True
             
