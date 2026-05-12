@@ -101,6 +101,9 @@ class XLerobot2WheelsHostConfig:
     # If robot jitters decrease the frequency and monitor cpu load with `top` in cmd
     max_loop_freq_hz: int = 30
 
+    profile_diagnostics: bool = False
+    profile_every_s: float = 2.0
+
 @RobotConfig.register_subclass("xlerobot_2wheels_client")
 @dataclass
 class XLerobot2WheelsClientConfig(RobotConfig):

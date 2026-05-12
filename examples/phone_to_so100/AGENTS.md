@@ -278,6 +278,9 @@ consider these speedups before changing phone axis mapping:
   Rerun logging, total loop work, and sleep headroom.
 - If the browser UI appears frozen, also run with `--profile-phone-stream` to see each Android server's
   incoming WebXR callback rate and percentage of messages with `move=True`.
+- To profile the Pi host, run `xlerobot_2wheels_host` with `--host.profile_diagnostics`. It reports host
+  loop rate, command rate, observation bandwidth, watchdog count, and average/max timings for command
+  handling, `robot.get_observation()`, and observation serialization/send.
 - Skip the per-arm EE/IK pipeline when that phone is disabled; hold or omit that arm's command instead of
   recomputing FK and IK every loop. The current XLeRobot teleop script resets that arm's processor while the
   phone is disabled, then sends a measured-joint hold command so the next enable press captures a fresh

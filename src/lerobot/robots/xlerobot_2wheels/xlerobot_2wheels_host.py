@@ -29,6 +29,89 @@ from .config_xlerobot_2wheels import XLerobot2WheelsConfig, XLerobot2WheelsHostC
 logger = logging.getLogger(__name__)
 
 
+class HostProfiler:
+    def __init__(self, enabled: bool, report_every_s: float, target_dt_s: float):
+        self.enabled = enabled
+        self.report_every_s = report_every_s
+        self.target_dt_s = target_dt_s
+        self.report_start_t = time.perf_counter()
+        self.sums: dict[str, float] = {}
+        self.maxes: dict[str, float] = {}
+        self.counts: dict[str, int] = {}
+        self.loop_count = 0
+        self.command_count = 0
+        self.watchdog_count = 0
+        self.observation_bytes = 0
+
+    def record(self, name: str, dt_s: float) -> None:
+        if not self.enabled:
+            return
+        self.sums[name] = self.sums.get(name, 0.0) + dt_s
+        self.maxes[name] = max(self.maxes.get(name, 0.0), dt_s)
+        self.counts[name] = self.counts.get(name, 0) + 1
+
+    def increment_command(self) -> None:
+        if self.enabled:
+            self.command_count += 1
+
+    def increment_watchdog(self) -> None:
+        if self.enabled:
+            self.watchdog_count += 1
+
+    def add_observation_bytes(self, size_bytes: int) -> None:
+        if self.enabled:
+            self.observation_bytes += size_bytes
+
+    def maybe_report(self) -> None:
+        if not self.enabled:
+            return
+
+        self.loop_count += 1
+        now = time.perf_counter()
+        elapsed_s = now - self.report_start_t
+        if elapsed_s < self.report_every_s:
+            return
+
+        names = [
+            "cmd_poll",
+            "recv_cmd",
+            "process_cmd",
+            "get_observation",
+            "send_observation",
+            "loop_work",
+            "sleep",
+        ]
+        parts = []
+        for name in names:
+            count = self.counts.get(name, 0)
+            if count == 0:
+                continue
+            avg_ms = self.sums[name] / count * 1000.0
+            max_ms = self.maxes[name] * 1000.0
+            parts.append(f"{name}={avg_ms:.1f}/{max_ms:.1f}ms")
+
+        target_ms = self.target_dt_s * 1000.0
+        loop_hz = self.loop_count / elapsed_s
+        command_hz = self.command_count / elapsed_s
+        obs_kbps = self.observation_bytes / elapsed_s / 1024.0
+        print(
+            f"[host avg/max over {elapsed_s:.1f}s, target={target_ms:.1f}ms] "
+            f"loop={loop_hz:.1f}Hz cmd={command_hz:.1f}Hz obs={obs_kbps:.1f}KiB/s "
+            f"watchdog={self.watchdog_count} | "
+            + " | ".join(parts),
+            flush=True,
+        )
+
+        self.report_start_t = now
+        self.sums.clear()
+        self.maxes.clear()
+        self.counts.clear()
+        self.loop_count = 0
+        self.command_count = 0
+        self.watchdog_count = 0
+        self.observation_bytes = 0
+
+
 class XLerobot2WheelsHost:
     """
     Host for XLerobot2Wheels that runs on the robot hardware.
@@ -76,17 +159,32 @@ class XLerobot2WheelsHost:
         
         logger.info("Starting XLerobot2Wheels host control loop...")
         start_time = time.time()
+        target_dt = 1.0 / self.host_config.max_loop_freq_hz
+        profiler = HostProfiler(
+            enabled=self.host_config.profile_diagnostics,
+            report_every_s=max(self.host_config.profile_every_s, target_dt),
+            target_dt_s=target_dt,
+        )
         
         try:
             while self._is_running:
-                loop_start = time.time()
+                loop_start = time.perf_counter()
                 
                 # Check for commands with timeout
-                if self.zmq_cmd_socket.poll(timeout=1):  # 1ms timeout
+                section_start = time.perf_counter()
+                has_command = self.zmq_cmd_socket.poll(timeout=1)  # 1ms timeout
+                profiler.record("cmd_poll", time.perf_counter() - section_start)
+                if has_command:
                     try:
+                        section_start = time.perf_counter()
                         cmd_string = self.zmq_cmd_socket.recv_string(zmq.NOBLOCK)
                         cmd = json.loads(cmd_string)
+                        profiler.record("recv_cmd", time.perf_counter() - section_start)
+
+                        section_start = time.perf_counter()
                         self._process_command(cmd)
+                        profiler.record("process_cmd", time.perf_counter() - section_start)
+                        profiler.increment_command()
                         self.last_cmd_time = time.time()
                     except zmq.Again:
                         pass  # No command available
@@ -97,12 +195,19 @@ class XLerobot2WheelsHost:
                 if time.time() - self.last_cmd_time > self.host_config.watchdog_timeout_ms / 1000.0:
                     logger.warning("Watchdog timeout - stopping base motors")
                     self.robot.stop_base()
+                    profiler.increment_watchdog()
                     self.last_cmd_time = time.time()  # Reset to avoid spam
                 
                 # Get observation and send it
                 try:
+                    section_start = time.perf_counter()
                     obs = self.robot.get_observation()
-                    self._send_observation(obs)
+                    profiler.record("get_observation", time.perf_counter() - section_start)
+
+                    section_start = time.perf_counter()
+                    observation_bytes = self._send_observation(obs)
+                    profiler.record("send_observation", time.perf_counter() - section_start)
+                    profiler.add_observation_bytes(observation_bytes)
                 except Exception as e:
                     logger.error(f"Failed to get observation: {e}")
                 
@@ -112,10 +217,13 @@ class XLerobot2WheelsHost:
                     break
                 
                 # Control loop frequency
-                loop_duration = time.time() - loop_start
-                target_dt = 1.0 / self.host_config.max_loop_freq_hz
+                loop_duration = time.perf_counter() - loop_start
+                profiler.record("loop_work", loop_duration)
                 if loop_duration < target_dt:
+                    section_start = time.perf_counter()
                     precise_sleep(target_dt - loop_duration)
+                    profiler.record("sleep", time.perf_counter() - section_start)
+                profiler.maybe_report()
                 
         except KeyboardInterrupt:
             logger.info("Received keyboard interrupt, stopping host")
@@ -130,7 +238,7 @@ class XLerobot2WheelsHost:
         except Exception as e:
             logger.error(f"Failed to process command: {e}")
 
-    def _send_observation(self, obs: dict[str, Any]):
+    def _send_observation(self, obs: dict[str, Any]) -> int:
         """Send observation via ZMQ"""
         try:
             # Convert images to base64 for transmission
@@ -148,9 +256,11 @@ class XLerobot2WheelsHost:
             # Send observation
             obs_string = json.dumps(obs_for_transmission)
             self.zmq_observation_socket.send_string(obs_string)
+            return len(obs_string)
             
         except Exception as e:
             logger.error(f"Failed to send observation: {e}")
+            return 0
 
     def stop(self):
         """Stop the host and disconnect"""
@@ -197,6 +307,19 @@ def main():
     parser.add_argument(
         "--host.max_loop_freq_hz", dest="host_max_loop_freq_hz", type=int, default=30, help="Max loop frequency"
     )
+    parser.add_argument(
+        "--host.profile_diagnostics",
+        dest="host_profile_diagnostics",
+        action="store_true",
+        help="Print rolling host loop timing diagnostics.",
+    )
+    parser.add_argument(
+        "--host.profile_every_s",
+        dest="host_profile_every_s",
+        type=float,
+        default=2.0,
+        help="When host diagnostics are enabled, print one report every N seconds.",
+    )
     
     args = parser.parse_args()
     
@@ -213,6 +336,8 @@ def main():
         connection_time_s=args.host_connection_time_s,
         watchdog_timeout_ms=args.host_watchdog_timeout_ms,
         max_loop_freq_hz=args.host_max_loop_freq_hz,
+        profile_diagnostics=args.host_profile_diagnostics,
+        profile_every_s=args.host_profile_every_s,
     )
     
     # Create and run host
