@@ -46,15 +46,15 @@ NUM_EPISODES = 2
 FPS = 30
 EPISODE_TIME_SEC = 60
 RESET_TIME_SEC = 30
-TASK_DESCRIPTION = "My task description"
-HF_REPO_ID = "<hf_username>/<dataset_repo_id>"
+TASK_DESCRIPTION = "One arm reaching test"
+HF_REPO_ID = "marshin68/phone-to-so100-dataset"  # Update with your Hugging Face repo ID, e.g. "username/repo_name"
 
 
 def main():
     # Create the robot and teleoperator configurations
     camera_config = {"front": OpenCVCameraConfig(index_or_path=0, width=640, height=480, fps=FPS)}
     robot_config = SO100FollowerConfig(
-        port="/dev/tty.usbmodem5A460814411",
+        port="/dev/ttyACM0",
         id="my_awesome_follower_arm",
         cameras=camera_config,
         use_degrees=True,
