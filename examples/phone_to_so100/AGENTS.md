@@ -258,6 +258,13 @@ primary `action` should be the final robot-native command dictionary.
     per-arm EE targets.
   - Dataset feature order: ensure `dataset.features["action"]["names"]` matches the command order expected
     by `make_robot_action()` and by `XLerobot2WheelsClient.action_features`.
+  - Transport caveat: the live teleop host intentionally drops observations when the Mac is not reading and
+    drains queued commands so only the newest command executes. This is good for responsiveness, but a
+    recorder must watch for `obs_drop > 0` or `cmd_drop > 0` because they can mean the recorded
+    action/observation pair is stale or was never executed exactly as recorded.
+  - Recording quality rule: prefer recording only when host diagnostics show `obs_drop=0`, `cmd_drop=0`,
+    `loop≈30Hz`, and `cmd≈30Hz`. For a robust recorder, add timestamps or sequence numbers so each saved
+    frame can be tied to a fresh observation and the latest command intended for that tick.
   - Verification: replay a short recorded episode through the same remote client path before training
     SmolVLA/pi0.5.
 
