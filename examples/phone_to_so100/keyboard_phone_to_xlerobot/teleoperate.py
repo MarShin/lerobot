@@ -37,7 +37,6 @@ from typing import Literal
 
 import numpy as np
 
-from lerobot.cameras.opencv import OpenCVCameraConfig
 from lerobot.model.kinematics import RobotKinematics
 from lerobot.processor import (
     RobotProcessorPipeline,
@@ -332,15 +331,9 @@ def print_controls(robot: XLerobot2WheelsClient) -> None:
 
 
 def make_robot() -> XLerobot2WheelsClient:
-    camera_config = {
-        "left_side": OpenCVCameraConfig(index_or_path=0, width=640, height=480, fps=FPS),
-        "right_side": OpenCVCameraConfig(index_or_path=1, width=640, height=480, fps=FPS),
-        "head": OpenCVCameraConfig(index_or_path=2, width=640, height=480, fps=FPS),
-    }
     robot_config = XLerobot2WheelsClientConfig(
         remote_ip=REMOTE_IP,
         id=ROBOT_ID,
-        cameras=camera_config,
     )
     return XLerobot2WheelsClient(robot_config)
 
