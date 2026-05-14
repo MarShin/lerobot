@@ -29,11 +29,11 @@ def xlerobot_2wheels_cameras_config() -> dict[str, CameraConfig]:
         ),
 
         "left_wrist": OpenCVCameraConfig(
-            index_or_path=Path("/dev/video4"), fps=30, width=640, height=480, rotation=Cv2Rotation.NO_ROTATION
+            index_or_path=Path("/dev/video2"), fps=30, width=640, height=480, rotation=Cv2Rotation.NO_ROTATION
         ),
 
         "right_wrist": OpenCVCameraConfig(
-            index_or_path=Path("/dev/video2"), fps=30, width=640, height=480, rotation=Cv2Rotation.NO_ROTATION
+            index_or_path=Path("/dev/video4"), fps=30, width=640, height=480, rotation=Cv2Rotation.NO_ROTATION
         ),
 
         # "head": RealSenseCameraConfig(
