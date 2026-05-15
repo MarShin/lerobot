@@ -42,24 +42,33 @@ from lerobot.utils.feature_utils import combine_feature_dicts
 from lerobot.utils.utils import log_say
 from lerobot.utils.visualization_utils import init_rerun
 
-NUM_EPISODES = 2
+NUM_EPISODES = 3
 FPS = 30
-EPISODE_TIME_SEC = 60
+EPISODE_TIME_SEC = 20
 RESET_TIME_SEC = 30
 TASK_DESCRIPTION = "One arm reaching test"
-HF_REPO_ID = "marshin68/phone-to-so100-dataset"  # Update with your Hugging Face repo ID, e.g. "username/repo_name"
+HF_REPO_ID = "marshin68/phone-to-so100-dataset1"  # Update with your Hugging Face repo ID, e.g. "username/repo_name"
+
+
+def print_controls() -> None:
+    print("\nPhone to SO100 recording")
+    print("Android phone: hold Move to teleoperate the arm")
+    print("Keyboard recording controls:")
+    print("  Right Arrow: finish the current record/reset loop early")
+    print("  Left Arrow: discard and re-record the current episode")
+    print("  Esc: stop data recording\n")
 
 
 def main():
     # Create the robot and teleoperator configurations
-    camera_config = {"front": OpenCVCameraConfig(index_or_path=0, width=640, height=480, fps=FPS)}
+    camera_config = {"head": OpenCVCameraConfig(index_or_path=0, width=640, height=480, fps=FPS)}
     robot_config = SO100FollowerConfig(
-        port="/dev/ttyACM0",
-        id="my_awesome_follower_arm",
+        port="/dev/tty.usbmodem5B140298121",
+        id="xlerobot_follower_left",
         cameras=camera_config,
         use_degrees=True,
     )
-    teleop_config = PhoneConfig(phone_os=PhoneOS.IOS)  # or PhoneOS.ANDROID
+    teleop_config = PhoneConfig(phone_os=PhoneOS.ANDROID)  # or PhoneOS.ANDROID
 
     # Initialize the robot and teleoperator
     robot = SO100Follower(robot_config)
@@ -148,6 +157,7 @@ def main():
     # Initialize the keyboard listener and rerun visualization
     listener, events = init_keyboard_listener()
     init_rerun(session_name="phone_so100_record")
+    print_controls()
 
     try:
         if not robot.is_connected or not phone.is_connected:
@@ -199,6 +209,10 @@ def main():
                 continue
 
             # Save episode
+            if not dataset.has_pending_frames():
+                print("No frames recorded for this episode; skipping save and stopping.")
+                break
+
             dataset.save_episode()
             episode_idx += 1
     finally:

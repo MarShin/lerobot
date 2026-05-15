@@ -61,7 +61,7 @@ from lerobot.utils.visualization_utils import init_rerun, log_rerun_data
 FPS = 30
 REMOTE_IP = "raspberrypi.local"
 ROBOT_ID = "my_xlerobot_2wheels"
-URDF_PATH = Path("../SO101/so101_new_calib.urdf")
+URDF_PATH = Path(__file__).resolve().parents[1] / "SO101" / "so101_new_calib.urdf"
 TARGET_FRAME_NAME = "gripper_frame_link"
 LEFT_PHONE_PORT = 4443
 RIGHT_PHONE_PORT = 4444
@@ -150,8 +150,7 @@ class LoopProfiler:
 
         target_ms = self.target_dt_s * 1000.0
         print(
-            f"[latency avg/max over {self.loop_count} loops, target={target_ms:.1f}ms] "
-            + " | ".join(parts),
+            f"[latency avg/max over {self.loop_count} loops, target={target_ms:.1f}ms] " + " | ".join(parts),
             flush=True,
         )
         self.sums.clear()

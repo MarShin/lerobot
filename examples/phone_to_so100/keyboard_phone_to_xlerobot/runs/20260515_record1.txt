@@ -1,0 +1,123 @@
+(lerobot) (base)  MartinShin@Marz-MacBook-Pro  ~/code/robotics/lerobot/examples/phone_to_so100   test_xlerobot ●  python record.py
+objc[39209]: Class AVFFrameReceiver is implemented in both /Users/MartinShin/code/robotics/lerobot/.venv/lib/python3.12/site-packages/cv2/.dylibs/libavdevice.61.3.100.dylib (0x10b4b83a8) and /Users/MartinShin/code/robotics/lerobot/.venv/lib/python3.12/site-packages/av/.dylibs/libavdevice.61.3.100.dylib (0x11cd603a8). One of the two will be used. Which one is undefined.
+objc[39209]: Class AVFAudioReceiver is implemented in both /Users/MartinShin/code/robotics/lerobot/.venv/lib/python3.12/site-packages/cv2/.dylibs/libavdevice.61.3.100.dylib (0x10b4b83f8) and /Users/MartinShin/code/robotics/lerobot/.venv/lib/python3.12/site-packages/av/.dylibs/libavdevice.61.3.100.dylib (0x11cd603f8). One of the two will be used. Which one is undefined.
+matplotlib not found - hebi.util.plot_logs and hebi.util.plot_trajectory will not work.
+WARNING: Robot has the following self collisions in neutral position:
+  -base_link_2 collides with shoulder_link_2
+  -shoulder_link_0 collides with upper_arm_link_1
+  -upper_arm_link_0 collides with lower_arm_link_0
+  -lower_arm_link_2 collides with wrist_link_1
+  -wrist_link_0 collides with gripper_link_1
+  -gripper_link_0 collides with moving_jaw_so101_v1_link_0
+Server started at 0.0.0.0:4443
+Hold the phone so that: top edge points forward in same direction as the robot (robot +x) and screen points up (robot +z)
+Tap Start in the WebXR page, then press and hold 'Hold to Move' to capture this pose...
+INFO:teleop:Server started at 0.0.0.0:4443
+
+Waiting for Android WebXR pose: tap Start and allow the browser AR/session prompts...
+The phone web app should be available at https://10.5.0.2:4443
+INFO:teleop:The phone web app should be available at https://10.5.0.2:4443
+Waiting for Android WebXR pose: tap Start and allow the browser AR/session prompts...
+Waiting for Android WebXR pose: tap Start and allow the browser AR/session prompts...
+Waiting for Android WebXR pose: tap Start and allow the browser AR/session prompts...
+Client connected
+INFO:teleop:Client connected
+Waiting for Android WebXR pose: tap Start and allow the browser AR/session prompts...
+Waiting for Android WebXR pose: tap Start and allow the browser AR/session prompts...
+Waiting for Android WebXR pose: tap Start and allow the browser AR/session prompts...
+Waiting for Android calibration trigger: hold the web UI 'Hold to Move' button...
+Waiting for Android calibration trigger: hold the web UI 'Hold to Move' button...
+Calibration done
+
+[2026-05-14T16:10:38Z INFO  re_grpc_server] Listening for gRPC connections on 0.0.0.0:9876. Connect by running `rerun --connect rerun+http://127.0.0.1:9876/proxy`
+
+Phone to SO100 recording
+Android phone: hold Move to teleoperate the arm
+Keyboard recording controls:
+  Right Arrow: finish the current record/reset loop early
+  Left Arrow: discard and re-record the current episode
+  Esc: stop data recording
+
+Starting record loop. Move your phone to teleoperate the robot...
+Pose jump detected, resetting the pose
+WARNING:teleop:Pose jump detected, resetting the pose
+Pose jump detected, resetting the pose
+WARNING:teleop:Pose jump detected, resetting the pose
+Pose jump detected, resetting the pose
+WARNING:teleop:Pose jump detected, resetting the pose
+Map: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 600/600 [00:00<00:00, 5192.12 examples/s]
+Svt[info]: -------------------------------------------
+Svt[info]: SVT [version]:	SVT-AV1 Encoder Lib v3.0.0
+Svt[info]: SVT [build]  :	Apple LLVM 15.0.0 (clang-1500.3.9.4)	 64 bit
+Svt[info]: LIB Build date: Jul  3 2025 03:06:26
+Svt[info]: -------------------------------------------
+Svt[warn]: Preset M12 is mapped to M10.
+Svt[info]: Level of Parallelism: 5
+Svt[info]: Number of PPCS 76
+Svt[info]: [asm level on system : up to neon_i8mm]
+Svt[info]: [asm level selected : up to neon_i8mm]
+Svt[info]: -------------------------------------------
+Svt[info]: SVT [config]: main profile	tier (auto)	level (auto)
+Svt[info]: SVT [config]: width / height / fps numerator / fps denominator 		: 640 / 480 / 30 / 1
+Svt[info]: SVT [config]: bit-depth / color format 					: 8 / YUV420
+Svt[info]: SVT [config]: preset / tune / pred struct 					: 10 / PSNR / random access
+Svt[info]: SVT [config]: gop size / mini-gop size / key-frame type 			: 2 / 16 / key frame
+Svt[info]: SVT [config]: BRC mode / rate factor 					: CRF / 30
+Svt[info]: SVT [config]: AQ mode / variance boost 					: 2 / 0
+Svt[info]: SVT [config]: sharpness / luminance-based QP bias 			: 0 / 0
+Svt[info]: Svt[info]: -------------------------------------------
+Pose jump detected, resetting the pose
+WARNING:teleop:Pose jump detected, resetting the pose
+Map: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 600/600 [00:00<00:00, 6280.23 examples/s]
+Svt[info]: -------------------------------------------
+Svt[info]: SVT [version]:	SVT-AV1 Encoder Lib v3.0.0
+Svt[info]: SVT [build]  :	Apple LLVM 15.0.0 (clang-1500.3.9.4)	 64 bit
+Svt[info]: LIB Build date: Jul  3 2025 03:06:26
+Svt[info]: -------------------------------------------
+Svt[warn]: Preset M12 is mapped to M10.
+Svt[info]: Level of Parallelism: 5
+Svt[info]: Number of PPCS 76
+Svt[info]: [asm level on system : up to neon_i8mm]
+Svt[info]: [asm level selected : up to neon_i8mm]
+Svt[info]: -------------------------------------------
+Svt[info]: SVT [config]: main profile	tier (auto)	level (auto)
+Svt[info]: SVT [config]: width / height / fps numerator / fps denominator 		: 640 / 480 / 30 / 1
+Svt[info]: SVT [config]: bit-depth / color format 					: 8 / YUV420
+Svt[info]: SVT [config]: preset / tune / pred struct 					: 10 / PSNR / random access
+Svt[info]: SVT [config]: gop size / mini-gop size / key-frame type 			: 2 / 16 / key frame
+Svt[info]: SVT [config]: BRC mode / rate factor 					: CRF / 30
+Svt[info]: SVT [config]: AQ mode / variance boost 					: 2 / 0
+Svt[info]: SVT [config]: sharpness / luminance-based QP bias 			: 0 / 0
+Svt[info]: Svt[info]: -------------------------------------------
+[mp4 @ 0x15bc38be0] Starting second pass: moving the moov atom to the beginning of the file
+Pose jump detected, resetting the pose
+WARNING:teleop:Pose jump detected, resetting the pose
+Map: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 600/600 [00:00<00:00, 6012.09 examples/s]
+Svt[info]: -------------------------------------------
+Svt[info]: SVT [version]:	SVT-AV1 Encoder Lib v3.0.0
+Svt[info]: SVT [build]  :	Apple LLVM 15.0.0 (clang-1500.3.9.4)	 64 bit
+Svt[info]: LIB Build date: Jul  3 2025 03:06:26
+Svt[info]: -------------------------------------------
+Svt[warn]: Preset M12 is mapped to M10.
+Svt[info]: Level of Parallelism: 5
+Svt[info]: Number of PPCS 76
+Svt[info]: [asm level on system : up to neon_i8mm]
+Svt[info]: [asm level selected : up to neon_i8mm]
+Svt[info]: -------------------------------------------
+Svt[info]: SVT [config]: main profile	tier (auto)	level (auto)
+Svt[info]: SVT [config]: width / height / fps numerator / fps denominator 		: 640 / 480 / 30 / 1
+Svt[info]: SVT [config]: bit-depth / color format 					: 8 / YUV420
+Svt[info]: SVT [config]: preset / tune / pred struct 					: 10 / PSNR / random access
+Svt[info]: SVT [config]: gop size / mini-gop size / key-frame type 			: 2 / 16 / key frame
+Svt[info]: SVT [config]: BRC mode / rate factor 					: CRF / 30
+Svt[info]: SVT [config]: AQ mode / variance boost 					: 2 / 0
+Svt[info]: SVT [config]: sharpness / luminance-based QP bias 			: 0 / 0
+Svt[info]: Svt[info]: -------------------------------------------
+[mp4 @ 0x2e2821890] Starting second pass: moving the moov atom to the beginning of the file
+Processing Files (4 / 4)      : 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 6.60MB / 6.60MB, 1.74MB/s
+New Data Upload               : 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 6.60MB / 6.60MB, 1.74MB/s
+  ...taset1/meta/tasks.parquet: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2.10kB / 2.10kB
+  ...hunk-000/file-000.parquet: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████|  121kB /  121kB
+  ...hunk-000/file-000.parquet: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 46.5kB / 46.5kB
+  ...ad/chunk-000/file-000.mp4: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 6.43MB / 6.43MB
+(lerobot) (base)  MartinShin@Marz-MacBook-Pro  ~/code/robotics/lerobot/examples/phone_to_so100   test_xlerobot ● 

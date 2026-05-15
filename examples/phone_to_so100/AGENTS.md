@@ -249,15 +249,24 @@ primary `action` should be the final robot-native command dictionary.
   - Safety: keep per-arm EE bounds/rate limits before IK and keep base/head command limits before sending
     the merged action.
 
-- [ ] Create an XLeRobot recording script.
-  - Target: a new XLeRobot-specific `record.py` that records the remote teleop from the script above into a
-    LeRobot dataset.
-  - Observation schema: use the XLeRobot client observation features, including three cameras
-    (`left_side`, `right_side`, `head`) and the 16-dim `observation.state` listed above.
-  - Action schema: save the final merged robot-native command dictionary as `action`, not the intermediate
-    per-arm EE targets.
-  - Dataset feature order: ensure `dataset.features["action"]["names"]` matches the command order expected
-    by `make_robot_action()` and by `XLerobot2WheelsClient.action_features`.
+- [x] Create an XLeRobot recording script.
+  - Initial implementation: `examples/phone_to_so100/keyboard_phone_to_xlerobot/record.py`.
+  - Run after the Pi-side host is already streaming observations:
+    `uv run python examples/phone_to_so100/keyboard_phone_to_xlerobot/record.py --repo-id <hf_user>/<dataset_name> --task "<task>"`.
+  - Control path mirrors the responsive live teleop script: two Android `Phone` instances, keyboard head/base
+    control, per-arm EE/IK pipelines, and one merged robot-native command dictionary sent to
+    `XLerobot2WheelsClient.send_action()`.
+  - Observation schema is derived from `XLerobot2WheelsClient.observation_features`, so the three camera
+    feature keys come from the client camera config and the 16-dim `observation.state` order stays aligned
+    with the client.
+  - Action schema is derived from `XLerobot2WheelsClient.action_features`, and startup validation checks that
+    `dataset.features["action"]["names"]` exactly matches that client action order.
+  - The saved dataset action is the action returned by `send_action()` after the remote client has expanded
+    the final command into the canonical 16-key robot-native vector. Intermediate per-arm EE targets are not
+    stored as the primary action.
+  - Keep Rerun disabled by default during recording. Use `--enable-rerun --rerun-log-every-n 10` only when
+    inspecting camera/action alignment, and use `--profile-latency` plus host `--profile-diagnostics` for
+    collection runs where timing quality matters.
   - Transport caveat: the live teleop host intentionally drops observations when the Mac is not reading and
     drains queued commands so only the newest command executes. This is good for responsiveness, but a
     recorder must watch for `obs_drop > 0` or `cmd_drop > 0` because they can mean the recorded
