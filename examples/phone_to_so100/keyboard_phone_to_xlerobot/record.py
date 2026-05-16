@@ -77,6 +77,7 @@ from teleoperate import (  # noqa: E402
     phone_action_enabled,
     print_controls,
     process_phone_arm_action,
+    reset_arms_to_initial_pose,
 )
 
 DEFAULT_REPO_ID = "marshin68/xlerobot-phone-keyboard-dataset"
@@ -449,6 +450,7 @@ def main() -> None:
     right_phone = Phone(right_phone_config)
     dataset = None
     listener = None
+    context = None
 
     use_videos = not args.no_videos
     profiler = LoopProfiler(
@@ -549,6 +551,17 @@ def main() -> None:
                 episode_idx += 1
 
     finally:
+        if robot.is_connected and context is not None:
+            try:
+                log_say("Resetting both arms to startup pose before disconnecting")
+                reset_arms_to_initial_pose(
+                    robot,
+                    context.init_left_arm_action,
+                    context.init_right_arm_action,
+                    fps=args.fps,
+                )
+            except Exception as exc:
+                logging.warning("Failed to reset arms before disconnect: %s", exc)
         log_say("Stop recording")
         for device in [left_phone, right_phone, keyboard, robot]:
             try:

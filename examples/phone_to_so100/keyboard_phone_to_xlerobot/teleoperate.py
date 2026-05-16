@@ -67,6 +67,7 @@ LEFT_PHONE_PORT = 4443
 RIGHT_PHONE_PORT = 4444
 RERUN_LOG_EVERY_N = 10
 PROFILE_EVERY_N = 60
+SHUTDOWN_ARM_RESET_TIME_S = 2.0
 
 SO101_MOTOR_NAMES = [
     "shoulder_pan",
@@ -254,6 +255,29 @@ def extract_init_arm_position(observation: RobotObservation, side: ArmSide) -> R
     return hold_current_arm_position(observation, side)
 
 
+def reset_arms_to_initial_pose(
+    robot: XLerobot2WheelsClient,
+    init_left_arm_action: RobotAction,
+    init_right_arm_action: RobotAction,
+    *,
+    duration_s: float = SHUTDOWN_ARM_RESET_TIME_S,
+    fps: int = FPS,
+) -> None:
+    reset_action = {
+        **init_left_arm_action,
+        **init_right_arm_action,
+        "x.vel": 0.0,
+        "theta.vel": 0.0,
+    }
+    end_t = time.perf_counter() + max(duration_s, 0.0)
+    while True:
+        robot.send_action(reset_action)
+        remaining_s = end_t - time.perf_counter()
+        if remaining_s <= 0:
+            break
+        precise_sleep(min(1.0 / fps, remaining_s))
+
+
 def make_phone_to_arm_joints_processor(
     *,
     platform: PhoneOS,
@@ -425,6 +449,8 @@ def main():
         platform=right_phone_config.phone_os,
         kinematics=right_kinematics,
     )
+    init_left_arm_action = None
+    init_right_arm_action = None
 
     try:
         robot.connect()
@@ -537,6 +563,12 @@ def main():
     except KeyboardInterrupt:
         print("KeyboardInterrupt received.")
     finally:
+        if robot.is_connected and init_left_arm_action is not None and init_right_arm_action is not None:
+            try:
+                print("Resetting both arms to startup pose before disconnecting.")
+                reset_arms_to_initial_pose(robot, init_left_arm_action, init_right_arm_action)
+            except Exception as exc:
+                print(f"Failed to reset arms before disconnect: {exc}")
         for device in [left_phone, right_phone, keyboard, robot]:
             try:
                 if device.is_connected:
