@@ -42,14 +42,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from lerobot.common.control_utils import init_keyboard_listener
+from lerobot.common.control_utils import init_keyboard_listener, sanity_check_dataset_robot_compatibility
 from lerobot.datasets import LeRobotDataset, VideoEncodingManager
 from lerobot.model.kinematics import RobotKinematics
 from lerobot.robots.xlerobot_2wheels import XLerobot2WheelsClient, XLerobot2WheelsClientConfig
 from lerobot.teleoperators.keyboard.teleop_keyboard import KeyboardTeleop, KeyboardTeleopConfig
 from lerobot.teleoperators.phone import Phone, PhoneConfig
 from lerobot.teleoperators.phone.config_phone import PhoneOS
-from lerobot.utils.constants import ACTION, OBS_STR
+from lerobot.utils.constants import ACTION, HF_LEROBOT_HOME, OBS_STR
 from lerobot.utils.feature_utils import build_dataset_frame, combine_feature_dicts, hw_to_dataset_features
 from lerobot.utils.robot_utils import precise_sleep
 from lerobot.utils.utils import init_logging, log_say
@@ -109,7 +109,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--repo-id", default=DEFAULT_REPO_ID, help="Hugging Face dataset repo id.")
     parser.add_argument("--root", type=Path, default=None, help="Optional local dataset root.")
     parser.add_argument("--task", default=DEFAULT_TASK, help="Task string saved with every frame.")
-    parser.add_argument("--num-episodes", type=int, default=DEFAULT_NUM_EPISODES)
+    parser.add_argument(
+        "--num-episodes",
+        type=int,
+        default=DEFAULT_NUM_EPISODES,
+        help="Target total number of episodes. With --resume, recording continues until this total is reached.",
+    )
+    parser.add_argument("--resume", action="store_true", help="Resume/appends to an existing local dataset.")
     parser.add_argument("--episode-time-s", type=int, default=DEFAULT_EPISODE_TIME_S)
     parser.add_argument("--reset-time-s", type=int, default=DEFAULT_RESET_TIME_S)
     parser.add_argument("--fps", type=int, default=FPS)
@@ -225,6 +231,60 @@ def make_dataset_features(robot: XLerobot2WheelsClient, *, use_videos: bool) -> 
             f"{action_names} != {expected_action_names}"
         )
     return features
+
+
+def dataset_root_for_recording(args: argparse.Namespace) -> Path | None:
+    if args.root is not None:
+        return args.root
+    if args.resume:
+        return HF_LEROBOT_HOME / args.repo_id
+    return None
+
+
+def make_or_resume_dataset(
+    *,
+    args: argparse.Namespace,
+    robot: XLerobot2WheelsClient,
+    features: dict[str, dict],
+    use_videos: bool,
+) -> LeRobotDataset:
+    root = dataset_root_for_recording(args)
+    image_writer_threads = args.image_writer_threads_per_camera * len(robot.config.cameras)
+    if args.resume:
+        dataset = LeRobotDataset.resume(
+            args.repo_id,
+            root=root,
+            streaming_encoding=args.streaming_encoding,
+            encoder_threads=args.encoder_threads,
+            image_writer_threads=image_writer_threads,
+        )
+        sanity_check_dataset_robot_compatibility(dataset, robot, args.fps, features)
+        if dataset.num_episodes >= args.num_episodes:
+            logging.warning(
+                "Dataset already has %s episodes, which meets or exceeds target --num-episodes=%s.",
+                dataset.num_episodes,
+                args.num_episodes,
+            )
+        else:
+            logging.info(
+                "Resuming dataset at %s with %s/%s episodes saved.",
+                dataset.root,
+                dataset.num_episodes,
+                args.num_episodes,
+            )
+        return dataset
+
+    return LeRobotDataset.create(
+        repo_id=args.repo_id,
+        fps=args.fps,
+        root=root,
+        robot_type=robot.name,
+        features=features,
+        use_videos=use_videos,
+        image_writer_threads=image_writer_threads,
+        streaming_encoding=args.streaming_encoding,
+        encoder_threads=args.encoder_threads,
+    )
 
 
 # is this correct? should we be checking for specific camera keys instead of all tuple features?
@@ -483,23 +543,17 @@ def main() -> None:
         )
 
         features = make_dataset_features(robot, use_videos=use_videos)
-        dataset = LeRobotDataset.create(
-            repo_id=args.repo_id,
-            fps=args.fps,
-            root=args.root,
-            robot_type=robot.name,
+        dataset = make_or_resume_dataset(
+            args=args,
+            robot=robot,
             features=features,
             use_videos=use_videos,
-            image_writer_threads=args.image_writer_threads_per_camera * len(robot.config.cameras),
-            streaming_encoding=args.streaming_encoding,
-            encoder_threads=args.encoder_threads,
         )
 
         listener, events = init_keyboard_listener()
         with VideoEncodingManager(dataset):
-            episode_idx = 0
-            while episode_idx < args.num_episodes and not events["stop_recording"]:
-                log_say(f"Recording episode {episode_idx + 1} of {args.num_episodes}")
+            while dataset.num_episodes < args.num_episodes and not events["stop_recording"]:
+                log_say(f"Recording episode {dataset.num_episodes + 1} of {args.num_episodes}")
                 record_control_loop(
                     robot=robot,
                     keyboard=keyboard,
@@ -518,7 +572,7 @@ def main() -> None:
                 )
 
                 if not events["stop_recording"] and (
-                    episode_idx < args.num_episodes - 1 or events["rerecord_episode"]
+                    dataset.num_episodes < args.num_episodes - 1 or events["rerecord_episode"]
                 ):
                     log_say("Reset the environment")
                     record_control_loop(
@@ -548,12 +602,11 @@ def main() -> None:
                     continue
 
                 dataset.save_episode()
-                episode_idx += 1
 
     finally:
         if robot.is_connected and context is not None:
             try:
-                log_say("Resetting both arms to startup pose before disconnecting")
+                log_say("Resetting both arms to startup pose")
                 reset_arms_to_initial_pose(
                     robot,
                     context.init_left_arm_action,
@@ -571,6 +624,8 @@ def main() -> None:
                 logging.warning("Failed to disconnect %s: %s", device, exc)
         if listener is not None:
             listener.stop()
+        if dataset is not None:
+            dataset.finalize()
 
     if args.push_to_hub and dataset is not None and dataset.num_episodes > 0:
         dataset.push_to_hub()
