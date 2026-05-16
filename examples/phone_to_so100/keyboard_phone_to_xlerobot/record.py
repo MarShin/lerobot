@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import math
 import sys
 import time
 from dataclasses import dataclass
@@ -84,6 +85,8 @@ DEFAULT_NUM_EPISODES = 2
 DEFAULT_EPISODE_TIME_S = 30
 DEFAULT_RESET_TIME_S = 30
 RERUN_LOG_EVERY_N = 10
+RESET_PAUSE_KEY = "p"
+RESET_COUNTDOWN_LAST_S = 10
 
 
 @dataclass
@@ -159,6 +162,15 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def print_recording_controls() -> None:
+    print("Keyboard recording controls:")
+    print("  Right Arrow: finish the current record/reset loop early")
+    print("  Left Arrow: discard and re-record the current episode")
+    print("  Esc: stop data recording")
+    print("Reset period:")
+    print(f"  {RESET_PAUSE_KEY}: pause/resume the reset timer\n")
+
+
 def make_robot(args: argparse.Namespace) -> XLerobot2WheelsClient:
     config = XLerobot2WheelsClientConfig(remote_ip=args.remote_ip, id=args.robot_id)
     return XLerobot2WheelsClient(config)
@@ -212,6 +224,7 @@ def make_dataset_features(robot: XLerobot2WheelsClient, *, use_videos: bool) -> 
             f"{action_names} != {expected_action_names}"
         )
     return features
+
 
 # is this correct? should we be checking for specific camera keys instead of all tuple features?
 def assert_observation_has_cameras(robot: XLerobot2WheelsClient, observation: dict[str, Any]) -> None:
@@ -300,12 +313,24 @@ def record_control_loop(
     rerun_log_every_n: int,
     skip_disabled_phone_ik: bool,
     profiler: LoopProfiler,
+    allow_reset_pause: bool = False,
+    countdown_last_s: int = 0,
 ) -> None:
     control_interval_s = 1.0 / fps
     start_episode_t = time.perf_counter()
+    paused_total_s = 0.0
+    pause_started_t: float | None = None
+    reset_paused = False
+    previous_pressed_keys: set[str] = set()
+    last_countdown_remaining: int | None = None
     loop_idx = 0
 
-    while time.perf_counter() - start_episode_t < control_time_s:
+    def elapsed_control_time() -> float:
+        now = time.perf_counter()
+        current_pause_s = now - pause_started_t if reset_paused and pause_started_t is not None else 0.0
+        return now - start_episode_t - paused_total_s - current_pause_s
+
+    while elapsed_control_time() < control_time_s:
         loop_start = time.perf_counter()
 
         if events["exit_early"]:
@@ -328,6 +353,30 @@ def record_control_loop(
         section_start = time.perf_counter()
         pressed_keys = set(keyboard.get_action().keys())
         profiler.record("keyboard", time.perf_counter() - section_start)
+
+        if (
+            allow_reset_pause
+            and RESET_PAUSE_KEY in pressed_keys
+            and RESET_PAUSE_KEY not in previous_pressed_keys
+        ):
+            if reset_paused:
+                if pause_started_t is not None:
+                    paused_total_s += time.perf_counter() - pause_started_t
+                pause_started_t = None
+                reset_paused = False
+                log_say("Reset timer resumed")
+            else:
+                pause_started_t = time.perf_counter()
+                reset_paused = True
+                log_say(f"Reset timer paused. Press {RESET_PAUSE_KEY} to resume.")
+        previous_pressed_keys = pressed_keys
+
+        if countdown_last_s > 0 and not reset_paused:
+            remaining_s = max(0.0, control_time_s - elapsed_control_time())
+            remaining_whole_s = math.ceil(remaining_s)
+            if 1 <= remaining_whole_s <= countdown_last_s and remaining_whole_s != last_countdown_remaining:
+                log_say(f"{remaining_whole_s} seconds")
+                last_countdown_remaining = remaining_whole_s
 
         if robot.teleop_keys["quit"] in pressed_keys:
             print("Quit requested by keyboard.")
@@ -420,6 +469,7 @@ def main() -> None:
         if args.enable_rerun:
             init_rerun(session_name="keyboard_phone_to_xlerobot_record")
         print_controls(robot)
+        print_recording_controls()
 
         initial_observation = robot.get_observation()
         assert_observation_has_cameras(robot, initial_observation)
@@ -484,6 +534,8 @@ def main() -> None:
                         rerun_log_every_n=max(1, args.rerun_log_every_n),
                         skip_disabled_phone_ik=args.skip_disabled_phone_ik,
                         profiler=profiler,
+                        allow_reset_pause=True,
+                        countdown_last_s=RESET_COUNTDOWN_LAST_S,
                     )
 
                 if events["rerecord_episode"]:
