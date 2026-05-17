@@ -360,8 +360,10 @@ def p_control_loop(
 
     while True:
         try:
-            # Get keyboard input
-            keyboard_action = keyboard.get_action()
+            # The keyboard listener is optional on headless Raspberry Pi runs.
+            # Drain it when available, but Joy-Con control does not depend on it.
+            if keyboard is not None and keyboard.is_connected:
+                keyboard.get_action()
 
             pose, gripper, control_button = joyconrobotics_right.get_control()
             x, y, z, roll_, pitch_, yaw = pose
@@ -468,6 +470,8 @@ def main():
         # Connect devices
         robot.connect()
         keyboard.connect()
+        if not keyboard.is_connected:
+            print("Keyboard listener unavailable; continuing with Joy-Con control only.")
         # 使用修改后的控制类
         joyconrobotics_right = FixedAxesJoyconRobotics(
             "right",
@@ -551,7 +555,8 @@ def main():
 
         # Disconnect
         robot.disconnect()
-        keyboard.disconnect()
+        if keyboard.is_connected:
+            keyboard.disconnect()
         print("Program ended")
 
     except Exception as e:

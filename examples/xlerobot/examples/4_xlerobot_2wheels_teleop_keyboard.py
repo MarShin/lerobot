@@ -498,7 +498,7 @@ def main():
     # robot_name = "my_xlerobot_2wheels_lab"
 
     # For zmq connection
-    robot_name = "xlerobot_2wheels"
+    robot_name = "my_xlerobot_2wheels"
     robot_config = XLerobot2WheelsClientConfig(remote_ip="raspberrypi.local", id=robot_name)
     robot = XLerobot2WheelsClient(robot_config)
 

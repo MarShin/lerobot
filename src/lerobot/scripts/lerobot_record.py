@@ -110,6 +110,7 @@ from lerobot.robots import (  # noqa: F401
     so_follower,
     unitree_g1 as unitree_g1_robot,
 )
+from lerobot.robots.bi_so_follower.keyboard_control import maybe_make_bi_so_follower_keyboard_processor
 from lerobot.teleoperators import (  # noqa: F401
     Teleoperator,
     TeleoperatorConfig,
@@ -341,6 +342,8 @@ def record(
     robot = make_robot_from_config(cfg.robot)
     teleop = make_teleoperator_from_config(cfg.teleop) if cfg.teleop is not None else None
 
+    uses_default_teleop_action_processor = teleop_action_processor is None
+
     # Fall back to identity pipelines when the caller doesn't supply processors.
     if (
         teleop_action_processor is None
@@ -351,6 +354,13 @@ def record(
         teleop_action_processor = teleop_action_processor or _t
         robot_action_processor = robot_action_processor or _r
         robot_observation_processor = robot_observation_processor or _o
+
+    if uses_default_teleop_action_processor:
+        teleop_action_processor = maybe_make_bi_so_follower_keyboard_processor(
+            robot=robot,
+            teleop=teleop,
+            fallback=teleop_action_processor,
+        )
 
     dataset_features = combine_feature_dicts(
         aggregate_pipeline_dataset_features(
