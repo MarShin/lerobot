@@ -233,6 +233,10 @@ primary `action` should be the final robot-native command dictionary.
 
 - [x] Create an XLeRobot teleoperation script.
   - Initial implementation: `examples/phone_to_so100/keyboard_phone_to_xlerobot/teleoperate.py`.
+  - Run after the Pi-side host is active:
+    `uv run python examples/phone_to_so100/keyboard_phone_to_xlerobot/teleoperate.py`.
+    The script currently uses constants for `REMOTE_IP`, `ROBOT_ID`, left phone port `4443`, and right phone
+    port `4444`; update those constants before hardware use if the robot hostname, id, or phone ports change.
   - Inputs: two Android `Phone` teleoperators, one mapped to the left SO101 arm and one mapped to the right
     SO101 arm.
   - Inputs: keyboard teleop for remote head and wheel-base control, using the current remote-control path in
@@ -244,6 +248,8 @@ primary `action` should be the final robot-native command dictionary.
   - Keyboard reset controls: `1` resets the left arm to the startup pose and `2` resets the right arm to the
     startup pose. Startup pose is captured from the first remote observation after robot/phone connection.
     Use `?` to set head motor targets to zero.
+  - Shutdown behavior: on normal quit or Ctrl-C, the script attempts to send both arms back to the startup
+    pose before disconnecting phones, keyboard, and robot.
   - Processor shape: phone actions can be mapped through per-arm EE pipelines, but the final action sent to
     `XLerobot2WheelsClient.send_action()` should already be in robot-native keys.
   - Safety: keep per-arm EE bounds/rate limits before IK and keep base/head command limits before sending
@@ -253,17 +259,28 @@ primary `action` should be the final robot-native command dictionary.
   - Initial implementation: `examples/phone_to_so100/keyboard_phone_to_xlerobot/record.py`.
   - Run after the Pi-side host is already streaming observations:
     `uv run python examples/phone_to_so100/keyboard_phone_to_xlerobot/record.py --repo-id <hf_user>/<dataset_name> --task "<task>"`.
+    Unlike `teleoperate.py`, the recorder exposes `--remote-ip`, `--robot-id`, `--left-phone-port`, and
+    `--right-phone-port` as CLI flags.
   - Control path mirrors the responsive live teleop script: two Android `Phone` instances, keyboard head/base
     control, per-arm EE/IK pipelines, and one merged robot-native command dictionary sent to
     `XLerobot2WheelsClient.send_action()`.
   - Observation schema is derived from `XLerobot2WheelsClient.observation_features`, so the three camera
     feature keys come from the client camera config and the 16-dim `observation.state` order stays aligned
     with the client.
+  - Camera validation is currently generic: `assert_observation_has_cameras()` requires every tuple-shaped
+    observation feature to appear in the remote observation. If tuple-valued non-camera observations are added
+    later, tighten this check to the explicit camera keys instead of treating every tuple feature as a camera.
   - Action schema is derived from `XLerobot2WheelsClient.action_features`, and startup validation checks that
     `dataset.features["action"]["names"]` exactly matches that client action order.
   - The saved dataset action is the action returned by `send_action()` after the remote client has expanded
     the final command into the canonical 16-key robot-native vector. Intermediate per-arm EE targets are not
     stored as the primary action.
+  - Recording controls come from `init_keyboard_listener()`: Right Arrow finishes the current record/reset
+    loop early, Left Arrow discards and re-records the current episode, and Esc stops recording. During the
+    reset period, `p` pauses/resumes the reset timer and the last 10 seconds are announced.
+  - Dataset options: use `--resume` to append until the requested total `--num-episodes`, `--no-videos` to
+    store camera frames as images, `--streaming-encoding` to encode during capture, and `--push-to-hub` to
+    upload after successful finalization.
   - Keep Rerun disabled by default during recording. Use `--enable-rerun --rerun-log-every-n 10` only when
     inspecting camera/action alignment, and use `--profile-latency` plus host `--profile-diagnostics` for
     collection runs where timing quality matters.
