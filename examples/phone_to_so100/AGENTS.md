@@ -225,184 +225,91 @@ Joint/head/base actions paired with joint/head/base state satisfy that assumptio
 joint state do not, unless relative actions are disabled or the state is converted into the same EE action
 space.
 
-## XLeRobot Progress TODO
+## XLeRobot Current Status
 
-Use this section to track the extension from single-arm phone teleop to the full XLeRobot setup. Keep the
-dataset recommendation above as the target contract: teleop may use EE-space internally, but the recorded
-primary `action` should be the final robot-native command dictionary.
+Historical profiling notes and completed action items live in
+[`AGENTS_ARCHIVE.md`](./AGENTS_ARCHIVE.md). Keep this section limited to current operating guidance.
 
-- [x] Create an XLeRobot teleoperation script.
-  - Initial implementation: `examples/phone_to_so100/keyboard_phone_to_xlerobot/teleoperate.py`.
-  - Run after the Pi-side host is active:
-    `uv run python examples/phone_to_so100/keyboard_phone_to_xlerobot/teleoperate.py`.
-    The script currently uses constants for `REMOTE_IP`, `ROBOT_ID`, left phone port `4443`, and right phone
-    port `4444`; update those constants before hardware use if the robot hostname, id, or phone ports change.
-  - Inputs: two Android `Phone` teleoperators, one mapped to the left SO101 arm and one mapped to the right
-    SO101 arm.
-  - Inputs: keyboard teleop for remote head and wheel-base control, using the current remote-control path in
-    `examples/xlerobot/examples/4_xlerobot_2wheels_teleop_keyboard.py`,
-    `src/lerobot/robots/xlerobot_2wheels/xlerobot_2wheels_host.py`, and
-    `src/lerobot/robots/xlerobot_2wheels/xlerobot_2wheels_client.py`.
-  - Output: one merged robot action dictionary containing left arm joint targets, right arm joint targets,
-    head motor targets, `x.vel`, and `theta.vel`.
-  - Keyboard reset controls: `1` resets the left arm to the startup pose and `2` resets the right arm to the
-    startup pose. Startup pose is captured from the first remote observation after robot/phone connection.
-    Use `?` to set head motor targets to zero.
-  - Shutdown behavior: on normal quit or Ctrl-C, the script attempts to send both arms back to the startup
-    pose before disconnecting phones, keyboard, and robot.
-  - Processor shape: phone actions can be mapped through per-arm EE pipelines, but the final action sent to
-    `XLerobot2WheelsClient.send_action()` should already be in robot-native keys.
-  - Safety: keep per-arm EE bounds/rate limits before IK and keep base/head command limits before sending
-    the merged action.
+The XLeRobot teleoperation and recording pipeline is ready for human data collection:
 
-- [x] Create an XLeRobot recording script.
-  - Initial implementation: `examples/phone_to_so100/keyboard_phone_to_xlerobot/record.py`.
-  - Run after the Pi-side host is already streaming observations:
-    `uv run python examples/phone_to_so100/keyboard_phone_to_xlerobot/record.py --repo-id <hf_user>/<dataset_name> --task "<task>"`.
-    Unlike `teleoperate.py`, the recorder exposes `--remote-ip`, `--robot-id`, `--left-phone-port`, and
-    `--right-phone-port` as CLI flags.
-  - Control path mirrors the responsive live teleop script: two Android `Phone` instances, keyboard head/base
-    control, per-arm EE/IK pipelines, and one merged robot-native command dictionary sent to
-    `XLerobot2WheelsClient.send_action()`.
-  - Observation schema is derived from `XLerobot2WheelsClient.observation_features`, so the three camera
-    feature keys come from the client camera config and the 16-dim `observation.state` order stays aligned
-    with the client.
-  - Camera validation is currently generic: `assert_observation_has_cameras()` requires every tuple-shaped
-    observation feature to appear in the remote observation. If tuple-valued non-camera observations are added
-    later, tighten this check to the explicit camera keys instead of treating every tuple feature as a camera.
-  - Action schema is derived from `XLerobot2WheelsClient.action_features`, and startup validation checks that
-    `dataset.features["action"]["names"]` exactly matches that client action order.
-  - The saved dataset action is the action returned by `send_action()` after the remote client has expanded
-    the final command into the canonical 16-key robot-native vector. Intermediate per-arm EE targets are not
-    stored as the primary action.
-  - Recording controls come from `init_keyboard_listener()`: Right Arrow finishes the current record/reset
-    loop early, Left Arrow discards and re-records the current episode, and Esc stops recording. During the
-    reset period, `p` pauses/resumes the reset timer and the last 10 seconds are announced.
-  - Dataset options: use `--resume` to append until the requested total `--num-episodes`, `--no-videos` to
-    store camera frames as images, `--streaming-encoding` to encode during capture, and `--push-to-hub` to
-    upload after successful finalization.
-  - For full-resolution recording without blocking the state/control loop, run the Pi host with split
-    observations and run `record.py` with `--split-observations`. The main observation socket then carries
-    arm/head/base state, while the image socket carries the latest full-resolution camera frames:
-    `uv run python -m lerobot.robots.xlerobot_2wheels.xlerobot_2wheels_host --robot.id=my_xlerobot_2wheels --host.split_observations --host.stream_images --host.image_send_freq_hz 10`.
-    Recorder side:
-    `uv run python examples/phone_to_so100/keyboard_phone_to_xlerobot/record.py --repo-id <hf_user>/<dataset_name> --task "<task>" --split-observations`.
-    The image socket port is the `port_zmq_images` default in `config_xlerobot_2wheels.py`.
-    Use `--max-camera-age-ms` to guard against saving stale cached image frames.
-  - Keep Rerun disabled by default during recording. Use `--enable-rerun --rerun-log-every-n 10` only when
-    inspecting camera/action alignment, and use `--profile-latency` plus host `--profile-diagnostics` for
-    collection runs where timing quality matters.
-  - Transport caveat: the live teleop host intentionally drops observations when the Mac is not reading and
-    drains queued commands so only the newest command executes. This is good for responsiveness, but a
-    recorder must watch for `obs_drop > 0` or `cmd_drop > 0` because they can mean the recorded
-    action/observation pair is stale or was never executed exactly as recorded.
-  - Recording quality rule: prefer recording only when host diagnostics show `obs_drop=0`, `cmd_drop=0`,
-    `loop≈30Hz`, and `cmd≈30Hz`. For a robust recorder, add timestamps or sequence numbers so each saved
-    frame can be tied to a fresh observation and the latest command intended for that tick.
-  - Verification: replay a short recorded episode through the same remote client path before training
-    SmolVLA/pi0.5.
+- Host/client split observation transport is responsive with three `640x480` camera streams at
+  `--host.image_send_freq_hz 30` and `--host.image_jpeg_quality 80`.
+- `examples/phone_to_so100/keyboard_phone_to_xlerobot/teleoperate.py` is the live smoke test for two Android
+  phones plus keyboard head/base control.
+- `examples/phone_to_so100/keyboard_phone_to_xlerobot/record.py` records the same control path into a
+  robot-native 16-dim state/action dataset.
+- The next human task is collection quality, not core implementation: record roughly 20-50 good episodes,
+  then replay/inspect before training SmolVLA/pi0.5.
 
-- [ ] Add policy rollout/evaluation once recording is stable.
-  - Build inference frames with the same three camera keys and 16-dim state used during recording.
-  - Convert policy output with `make_robot_action()` and send it directly through the XLeRobot client path.
-  - Only add EE postprocessing at inference if the dataset action space is intentionally changed to EE-space.
+Keep the dataset recommendation above as the target contract: teleop may use EE-space internally, but the
+recorded primary `action` should be the final robot-native command dictionary returned by
+`XLerobot2WheelsClient.send_action()`.
 
-## XLeRobot Teleop Performance Notes
+### Host Command
 
-Dual-phone XLeRobot teleop does more synchronous work per tick than the single-arm phone example: it reads a
-remote robot observation, polls two phones, runs two per-arm EE pipelines, solves IK twice, sends one merged
-remote action, and may log Rerun data every frame. If phone enable feels delayed or arm motion is sluggish,
-consider these speedups before changing phone axis mapping:
+Run this on the Pi before teleop or recording:
 
-### Current Finding
+```bash
+python -m lerobot.robots.xlerobot_2wheels.xlerobot_2wheels_host \
+  --robot.id=my_xlerobot_2wheels \
+  --host.split_observations \
+  --host.stream_images \
+  --host.image_send_freq_hz 30 \
+  --host.image_jpeg_quality 80 \
+  --host.profile_diagnostics
+```
 
-- Current profiling says the Mac-side control loop is not the main bottleneck. `--profile-latency` usually
-  shows `loop_work` around 1-2ms with most of the frame spent sleeping, while per-arm processing stays low.
-  The most suspicious remaining client-side problem is the Android/WebXR stream behavior when the browser UI
-  freezes or stops updating local stats.
-- Current host-side profiling says the Pi control loop is usually healthy once the Mac client is active, but
-  observation sending can block hard when the client is not consuming observations during calibration or
-  disconnect. The current host uses non-blocking observation sends with a low ZMQ high-water mark, so it
-  drops observations instead of blocking the control loop when the Mac is not reading.
-- The verified 2026-05-18 hardware finding is that reducing all three Pi-host cameras from `640x480` to
-  `320x240` restored smooth live phone teleoperation. With the current full-observation path at `640x480`,
-  the Pi host spends too much of each tick reading state plus moving three images through JPEG/base64
-  serialization, so teleop becomes observation-limited. This points to host-side CPU work in
-  `robot.get_observation()` and `_send_observation(...)`, not to the Mac control loop or a need for larger
-  ZMQ queues.
-- The 2026-05-18 split-transport regression was that `XLerobot2Wheels.get_state_observation()` still read
-  cameras, so `--host.split_observations` continued to put base64 JPEGs on the main observation socket while
-  the new image thread read cameras again. The failure signature is host diagnostics near `loop=15Hz`,
-  `obs≈850KiB/s`, and `get_observation≈62ms` even though split observations are enabled. The state path
-  should stay around the old state-only profile: low observation bandwidth and no camera reads from
-  `get_state_observation()`.
-- Each `Phone(...)` instance uses its own Android `Teleop` server and its own port. The current dual-phone
-  script intentionally runs two separate web servers, one for each arm.
-- In the 2026-05-12 run log, the transport fix was correct: the old multi-second `send_observation` stall
-  disappeared, the host stayed near 30Hz, and the remaining failure mode was one Android phone stream going
-  stale while the other continued streaming.
-- Observed responsiveness impact, from highest to lowest: non-blocking host observation sends were the major
-  improvement; host command draining was a useful secondary latency guard; Rerun disabled/throttled is good
-  live-control hygiene; disabled-phone IK skipping appears minor for the current bottleneck and should remain
-  an A/B option.
+Quality guardrail: prefer collecting only when host diagnostics stay near `loop=30Hz`, `cmd=30Hz`, and
+`obs_drop=0`. Occasional `cmd_drop` can be intentional stale-command draining, but persistent large values
+mean the host is executing fewer distinct commands than the client sent.
 
-### Implemented
+### Teleop Command
 
-- [x] Add Mac-side latency profiling. Use `--profile-latency` and compare the same rolling timing output
-  after each change. The script reports average/max timings for observation polling, phone reads, per-arm
-  processing, command send, Rerun logging, total loop work, and sleep headroom.
-- [x] Add Android stream profiling. Use `--profile-phone-stream` to see each Android server's incoming WebXR
-  callback rate and percentage of messages with `move=True`. If callbacks stop entirely, the Mac polling side
-  prints `[android:<port> poll] stale_for=...` so a frozen stream is visible even when the callback-side rate
-  reporter has gone silent.
-- [x] Add Pi host diagnostics. Run `xlerobot_2wheels_host` with `--host.profile_diagnostics`. It reports host
-  loop rate, command rate, observation bandwidth, watchdog count, and average/max timings for command
-  handling, `robot.get_observation()`, and observation serialization/send. It also reports `obs_drop` for
-  observations dropped because the Mac was not reading, and `cmd_drop` for queued stale commands skipped when
-  draining to the newest command.
-- [x] Make disabled-phone EE/IK skipping configurable. By default, the XLeRobot teleop script preserves the
-  original behavior and still runs that arm's EE/IK pipeline while the phone is disabled. Use
-  `--skip-disabled-phone-ik` to test the optimized path that resets the processor and sends a measured-joint
-  hold command while disabled. This remains an A/B test option because the skip reduced avoidable work but did
-  not produce a large visible speedup by itself.
-- [x] Throttle or disable `log_rerun_data(...)` during live responsiveness testing. The current XLeRobot
-  teleop script keeps Rerun off by default; use `--enable-rerun` and optionally `--rerun-log-every-n` when
-  visualization is needed.
-- [x] Make Pi host observation publishing non-blocking. The host now uses a low ZMQ high-water mark and drops
-  observations when the Mac is not reading instead of blocking the host loop.
-- [x] Drain queued ZMQ commands on the Pi host and execute only the newest command per host tick so stale
-  commands do not add perceived latency.
-- [x] Identify the current camera-resolution threshold for smooth live teleop. In the present Pi-host setup,
-  `320x240` across the three host cameras is smooth for live phone teleoperation, while `640x480` pushes the
-  host observation path over budget.
-- [x] Add opt-in split observation transport. With `--host.split_observations`, the host sends state-only
-  observations on the normal observation socket. Add `--host.stream_images` only when recording or previewing
-  images from the separate image socket; do not enable image streaming for latency-sensitive live teleop unless
-  you are actively testing image transport.
-- [x] Keep the split state path camera-free. `XLerobot2Wheels.get_state_observation()` must not call
-  `cam.async_read()`; camera capture belongs in `get_camera_observation()` and the image-stream loop.
+Run this on the Mac for live control checks:
 
-### Pending
+```bash
+python examples/phone_to_so100/keyboard_phone_to_xlerobot/teleoperate.py \
+  --split-observations \
+  --profile-latency \
+  --profile-phone-stream \
+  --enable-rerun
+```
 
-- [ ] Debug Android/WebXR stream stalls. Current logs show one phone can stop delivering callbacks for tens
-  of seconds while the other phone continues streaming normally. This is now the highest-value next target.
-- [ ] Validate split observation transport on hardware at `640x480`. Watch host diagnostics plus Pi CPU load
-  with `top`/`htop`; if the image stream still starves the state loop, lower `--host.image_send_freq_hz`, lower
-  `--host.image_jpeg_quality`, or move full-resolution image capture to a Pi-local recording sidecar with
-  timestamps and merge it with Mac-side state/action data after the episode.
-- [ ] Optimize `EEReferenceAndDelta(use_latched_reference=True)` so FK runs only when a reference pose is
-  needed. With latched reference enabled, the current implementation still computes FK at the start of every
-  call. Semantically, FK is only required on the enable rising edge when `reference_ee_pose` is captured, and
-  once before the first disabled hold command if no command has been latched yet. During continuous enabled
-  motion, target deltas are applied to the stored `reference_ee_pose`, so the measured current EE pose is not
-  needed for this step.
-- [ ] Seed live IK from the previous IK solution after enable instead of measured joints every frame, while
-  still resetting from measured joints on enable or after large tracking errors.
-- [ ] Move remote observation receiving into a background "latest observation" cache so the phone-action loop
-  is not blocked by ZMQ polling on every tick. Current profiling suggests this is not urgent because the
-  Mac-side loop usually has substantial sleep headroom.
-- [ ] Avoid sending full hold commands for inactive arms every tick if the robot-side controller can safely
-  keep torque/position without repeated command refresh.
+The script uses `REMOTE_IP=raspberrypi.local`, `ROBOT_ID=my_xlerobot_2wheels`, left phone port `4443`, and
+right phone port `4444` by default. Update constants or CLI flags when those values change.
+
+### Record Command
+
+Use the same split-observation host for full-resolution recording:
+
+```bash
+python examples/phone_to_so100/keyboard_phone_to_xlerobot/record.py \
+  --profile-latency \
+  --profile-phone-stream \
+  --enable-rerun \
+  --repo-id marshin68/xlerobot_pick_n_place4 \
+  --task "Pick up the box and put into the gray tray" \
+  --streaming-encoding \
+  --episode-time-s 30 \
+  --reset-time-s 30 \
+  --num-episodes 5 \
+  --split-observations
+```
+
+Use `--resume` to append to an existing dataset. In resume mode, `--num-episodes` is the target total number
+of episodes, not the number to add in that run. Use `--push-to-hub` only after local recording finalizes
+successfully and the dataset has the expected episodes.
+
+Recording controls come from `init_keyboard_listener()`: Right Arrow finishes the current record/reset loop
+early, Left Arrow discards and re-records the current episode, Esc stops recording, and `p` pauses/resumes
+the reset timer.
+
+### Remaining Engineering Work
+
+- Add policy rollout/evaluation once data collection is stable.
+- Build inference frames with the same three camera keys and 16-dim state used during recording.
+- Convert policy output with `make_robot_action()` and send it directly through the XLeRobot client path.
+- Only add EE postprocessing at inference if the dataset action space intentionally changes to EE-space.
 
 ## Common Edits
 
