@@ -316,6 +316,12 @@ consider these speedups before changing phone axis mapping:
   observation sending can block hard when the client is not consuming observations during calibration or
   disconnect. The current host uses non-blocking observation sends with a low ZMQ high-water mark, so it
   drops observations instead of blocking the control loop when the Mac is not reading.
+- The verified 2026-05-18 hardware finding is that reducing all three Pi-host cameras from `640x480` to
+  `320x240` restored smooth live phone teleoperation. With the current full-observation path at `640x480`,
+  the Pi host spends too much of each tick reading state plus moving three images through JPEG/base64
+  serialization, so teleop becomes observation-limited. This points to host-side CPU work in
+  `robot.get_observation()` and `_send_observation(...)`, not to the Mac control loop or a need for larger
+  ZMQ queues.
 - Each `Phone(...)` instance uses its own Android `Teleop` server and its own port. The current dual-phone
   script intentionally runs two separate web servers, one for each arm.
 - In the 2026-05-12 run log, the transport fix was correct: the old multi-second `send_observation` stall
@@ -352,11 +358,18 @@ consider these speedups before changing phone axis mapping:
   observations when the Mac is not reading instead of blocking the host loop.
 - [x] Drain queued ZMQ commands on the Pi host and execute only the newest command per host tick so stale
   commands do not add perceived latency.
+- [x] Identify the current camera-resolution threshold for smooth live teleop. In the present Pi-host setup,
+  `320x240` across the three host cameras is smooth for live phone teleoperation, while `640x480` pushes the
+  host observation path over budget.
 
 ### Pending
 
 - [ ] Debug Android/WebXR stream stalls. Current logs show one phone can stop delivering callbacks for tens
   of seconds while the other phone continues streaming normally. This is now the highest-value next target.
+- [ ] Split live teleop observations from recording-quality image transport. For smooth teleop at `640x480`,
+  avoid forcing the host to JPEG/base64 three full-resolution images on the same low-latency control path as
+  arm/head/base state. A likely direction is state-fast plus image-slower, or a separate image stream that
+  recording can consume without making manual teleop observation-limited.
 - [ ] Optimize `EEReferenceAndDelta(use_latched_reference=True)` so FK runs only when a reference pose is
   needed. With latched reference enabled, the current implementation still computes FK at the start of every
   call. Semantically, FK is only required on the enable rising edge when `reference_ee_pose` is captured, and

@@ -904,3 +904,7 @@ WARNING:teleop:Pose jump detected, resetting the pose
 bQuit requested by keyboard.
 Resetting both arms to startup pose before disconnecting.
 Teleoperation ended.
+
+## findings
+- Debug jerky motion for phone teleop - Pi bottleneck on obs
+- change camera obs. image resolution from 640*480 to 320*240 -> smooth teleop.
