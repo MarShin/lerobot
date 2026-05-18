@@ -18,9 +18,12 @@ import sys
 import types
 from types import SimpleNamespace
 
+import numpy as np
 import pytest
 
-sys.modules.setdefault("zmq", types.ModuleType("zmq"))
+fake_zmq = types.ModuleType("zmq")
+fake_zmq.Socket = object
+sys.modules.setdefault("zmq", fake_zmq)
 
 
 @pytest.fixture
@@ -28,8 +31,29 @@ def robot():
     from lerobot.robots.xlerobot_2wheels import XLerobot2Wheels
 
     robot = XLerobot2Wheels.__new__(XLerobot2Wheels)
+    robot.id = "test_xlerobot_2wheels"
     robot.config = SimpleNamespace(wheel_radius=0.05, wheelbase=0.25)
     return robot
+
+
+class FakeBus:
+    is_connected = True
+
+    def sync_read(self, data_name, motors):
+        if data_name == "Present_Velocity":
+            return {"base_left_wheel": 0.0, "base_right_wheel": 0.0}
+        return dict.fromkeys(motors, 0.0)
+
+
+class FakeCamera:
+    is_connected = True
+
+    def __init__(self):
+        self.read_count = 0
+
+    def async_read(self):
+        self.read_count += 1
+        return np.zeros((2, 2, 3), dtype=np.uint8)
 
 
 def test_body_to_wheel_raw_uses_standard_differential_drive_signs(robot):
@@ -67,3 +91,23 @@ def test_base_kinematics_round_trip(robot, x, theta):
 
     assert body["x.vel"] == pytest.approx(x, abs=1e-4)
     assert body["theta.vel"] == pytest.approx(theta, abs=2e-2)
+
+
+def test_split_observation_state_path_does_not_read_cameras(robot):
+    camera = FakeCamera()
+    robot.bus1 = FakeBus()
+    robot.bus2 = FakeBus()
+    robot.left_arm_motors = ["left_arm_shoulder_pan"]
+    robot.right_arm_motors = ["right_arm_shoulder_pan"]
+    robot.head_motors = ["head_motor_1"]
+    robot.base_motors = ["base_left_wheel", "base_right_wheel"]
+    robot.cameras = {"head": camera}
+
+    state_obs = robot.get_state_observation()
+    split_obs = robot.get_observation(include_images=False)
+    image_obs = robot.get_observation(include_images=True)
+
+    assert "head" not in state_obs
+    assert "head" not in split_obs
+    assert camera.read_count == 1
+    assert image_obs["head"].shape == (2, 2, 3)

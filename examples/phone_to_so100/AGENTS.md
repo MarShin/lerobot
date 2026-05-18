@@ -330,6 +330,12 @@ consider these speedups before changing phone axis mapping:
   serialization, so teleop becomes observation-limited. This points to host-side CPU work in
   `robot.get_observation()` and `_send_observation(...)`, not to the Mac control loop or a need for larger
   ZMQ queues.
+- The 2026-05-18 split-transport regression was that `XLerobot2Wheels.get_state_observation()` still read
+  cameras, so `--host.split_observations` continued to put base64 JPEGs on the main observation socket while
+  the new image thread read cameras again. The failure signature is host diagnostics near `loop=15Hz`,
+  `obs≈850KiB/s`, and `get_observation≈62ms` even though split observations are enabled. The state path
+  should stay around the old state-only profile: low observation bandwidth and no camera reads from
+  `get_state_observation()`.
 - Each `Phone(...)` instance uses its own Android `Teleop` server and its own port. The current dual-phone
   script intentionally runs two separate web servers, one for each arm.
 - In the 2026-05-12 run log, the transport fix was correct: the old multi-second `send_observation` stall
@@ -373,6 +379,8 @@ consider these speedups before changing phone axis mapping:
   observations on the normal observation socket. Add `--host.stream_images` only when recording or previewing
   images from the separate image socket; do not enable image streaming for latency-sensitive live teleop unless
   you are actively testing image transport.
+- [x] Keep the split state path camera-free. `XLerobot2Wheels.get_state_observation()` must not call
+  `cam.async_read()`; camera capture belongs in `get_camera_observation()` and the image-stream loop.
 
 ### Pending
 
