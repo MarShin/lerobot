@@ -32,9 +32,10 @@
   --teleop.type=keyboard \
   --teleop.id=bimanual_leader \
   --display_data=true \
-  --dataset.repo_id=marshin68/bi_so_follower_pick_box \
+  --dataset.repo_id=marshin68/bi_so_follower_pick_box2 \
   --dataset.num_episodes=5 \
-  --dataset.single_task="pick up the box and put in the grey tray"
+  --dataset.single_task="pick up the box and put in the grey tray" \
+  --dataset.push_to_hub=false
 
 
   lerobot-train \
