@@ -12,19 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import base64
 import json
 import logging
+import threading
 import time
 from typing import Any
 
+import cv2
 import numpy as np
 import zmq
 
 # from lerobot.utils.robot_utils import busy_wait
 from lerobot.utils.robot_utils import precise_sleep
 
-from .xlerobot_2wheels import XLerobot2Wheels
 from .config_xlerobot_2wheels import XLerobot2WheelsConfig, XLerobot2WheelsHostConfig
+from .xlerobot_2wheels import XLerobot2Wheels
 
 logger = logging.getLogger(__name__)
 
@@ -108,8 +111,7 @@ class HostProfiler:
             f"[host avg/max over {elapsed_s:.1f}s, target={target_ms:.1f}ms] "
             f"loop={loop_hz:.1f}Hz cmd={command_hz:.1f}Hz obs={obs_kbps:.1f}KiB/s "
             f"watchdog={self.watchdog_count} cmd_drop={self.drained_command_count} "
-            f"obs_drop={self.dropped_observation_count} | "
-            + " | ".join(parts),
+            f"obs_drop={self.dropped_observation_count} | " + " | ".join(parts),
             flush=True,
         )
 
@@ -135,32 +137,34 @@ class XLerobot2WheelsHost:
     def __init__(self, robot_config: XLerobot2WheelsConfig, host_config: XLerobot2WheelsHostConfig):
         self.robot_config = robot_config
         self.host_config = host_config
-        
+
         self.robot = XLerobot2Wheels(robot_config)
-        
+
         # ZMQ setup
         self.zmq_context = None
         self.zmq_cmd_socket = None
         self.zmq_observation_socket = None
-        
+        self.zmq_image_socket = None
+
         self._is_running = False
         self.last_cmd_time = time.time()
+        self._image_thread = None
 
     def connect(self):
         """Connect to robot hardware and setup ZMQ sockets"""
         logger.info("Connecting to robot hardware...")
         self.robot.connect()
-        
+
         logger.info("Setting up ZMQ sockets...")
         self.zmq_context = zmq.Context()
-        
+
         # Command socket (PULL - receives commands)
         self.zmq_cmd_socket = self.zmq_context.socket(zmq.PULL)
         # Keep command backlog short. The host loop drains this socket each tick
         # and executes only the newest command so old teleop targets are skipped.
         self.zmq_cmd_socket.setsockopt(zmq.RCVHWM, 1)
         self.zmq_cmd_socket.bind(f"tcp://*:{self.host_config.port_zmq_cmd}")
-        
+
         # Observation socket (PUSH - sends observations)
         self.zmq_observation_socket = self.zmq_context.socket(zmq.PUSH)
         # Keep only a tiny outbound queue. If the Mac client is not reading
@@ -169,15 +173,24 @@ class XLerobot2WheelsHost:
         self.zmq_observation_socket.setsockopt(zmq.SNDHWM, 1)
         self.zmq_observation_socket.setsockopt(zmq.SNDTIMEO, 0)
         self.zmq_observation_socket.bind(f"tcp://*:{self.host_config.port_zmq_observations}")
-        
-        logger.info(f"ZMQ sockets bound to ports {self.host_config.port_zmq_cmd} and {self.host_config.port_zmq_observations}")
+
+        if self.host_config.split_observations:
+            self._image_thread = threading.Thread(
+                target=self._run_image_loop, name="xlerobot-image-stream", daemon=True
+            )
+
+        logger.info(
+            f"ZMQ sockets bound to ports {self.host_config.port_zmq_cmd} and {self.host_config.port_zmq_observations}"
+        )
         self._is_running = True
+        if self._image_thread is not None:
+            self._image_thread.start()
 
     def run(self):
         """Main control loop"""
         if not self._is_running:
             raise RuntimeError("Host not connected. Call connect() first.")
-        
+
         logger.info("Starting XLerobot2Wheels host control loop...")
         start_time = time.time()
         target_dt = 1.0 / self.host_config.max_loop_freq_hz
@@ -186,11 +199,11 @@ class XLerobot2WheelsHost:
             report_every_s=max(self.host_config.profile_every_s, target_dt),
             target_dt_s=target_dt,
         )
-        
+
         try:
             while self._is_running:
                 loop_start = time.perf_counter()
-                
+
                 # Check for commands with timeout
                 section_start = time.perf_counter()
                 has_command = self.zmq_cmd_socket.poll(timeout=1)  # 1ms timeout
@@ -215,18 +228,18 @@ class XLerobot2WheelsHost:
                         pass  # No command available
                     except json.JSONDecodeError as e:
                         logger.error(f"Failed to decode command: {e}")
-                
+
                 # Check watchdog timeout
                 if time.time() - self.last_cmd_time > self.host_config.watchdog_timeout_ms / 1000.0:
                     logger.warning("Watchdog timeout - stopping base motors")
                     self.robot.stop_base()
                     profiler.increment_watchdog()
                     self.last_cmd_time = time.time()  # Reset to avoid spam
-                
+
                 # Get observation and send it
                 try:
                     section_start = time.perf_counter()
-                    obs = self.robot.get_observation()
+                    obs = self.robot.get_observation(include_images=not self.host_config.split_observations)
                     profiler.record("get_observation", time.perf_counter() - section_start)
 
                     section_start = time.perf_counter()
@@ -240,12 +253,12 @@ class XLerobot2WheelsHost:
                         profiler.increment_dropped_observation()
                 except Exception as e:
                     logger.error(f"Failed to get observation: {e}")
-                
+
                 # Check if we should stop
                 if time.time() - start_time > self.host_config.connection_time_s:
                     logger.info("Connection time limit reached, stopping host")
                     break
-                
+
                 # Control loop frequency
                 loop_duration = time.perf_counter() - loop_start
                 profiler.record("loop_work", loop_duration)
@@ -254,7 +267,7 @@ class XLerobot2WheelsHost:
                     precise_sleep(target_dt - loop_duration)
                     profiler.record("sleep", time.perf_counter() - section_start)
                 profiler.maybe_report()
-                
+
         except KeyboardInterrupt:
             logger.info("Received keyboard interrupt, stopping host")
         finally:
@@ -281,57 +294,87 @@ class XLerobot2WheelsHost:
             except zmq.Again:
                 return latest_cmd_string, drained_count
 
+    def _encode_observation(self, obs: dict[str, Any]) -> str:
+        obs_for_transmission = {}
+        encode_params = [int(cv2.IMWRITE_JPEG_QUALITY), int(self.host_config.image_jpeg_quality)]
+        for key, value in obs.items():
+            if isinstance(value, np.ndarray) and len(value.shape) == 3:  # Image
+                ok, buffer = cv2.imencode(".jpg", value, encode_params)
+                if not ok:
+                    raise ValueError(f"Failed to JPEG-encode camera frame '{key}'")
+                obs_for_transmission[key] = base64.b64encode(buffer).decode("utf-8")
+            else:
+                obs_for_transmission[key] = value
+        return json.dumps(obs_for_transmission)
+
     def _send_observation(self, obs: dict[str, Any]) -> tuple[int, bool]:
-        """Send observation via ZMQ"""
+        """Send observation via ZMQ."""
         try:
-            # Convert images to base64 for transmission
-            obs_for_transmission = {}
-            for key, value in obs.items():
-                if isinstance(value, np.ndarray) and len(value.shape) == 3:  # Image
-                    # Encode image as base64
-                    import cv2
-                    import base64
-                    _, buffer = cv2.imencode('.jpg', value)
-                    obs_for_transmission[key] = base64.b64encode(buffer).decode('utf-8')
-                else:
-                    obs_for_transmission[key] = value
-            
-            # Send observation
-            obs_string = json.dumps(obs_for_transmission)
+            obs_string = self._encode_observation(obs)
             obs_size = len(obs_string)
             # Non-blocking send is intentional: teleop should prefer dropping an
             # observation over pausing motor command handling on the Pi.
             self.zmq_observation_socket.send_string(obs_string, flags=zmq.NOBLOCK)
             return obs_size, True
-            
+
         except zmq.Again:
             return 0, False
         except Exception as e:
             logger.error(f"Failed to send observation: {e}")
             return 0, False
 
+    def _run_image_loop(self) -> None:
+        assert self.zmq_context is not None
+        image_socket = self.zmq_context.socket(zmq.PUSH)
+        image_socket.setsockopt(zmq.SNDHWM, 1)
+        image_socket.setsockopt(zmq.SNDTIMEO, 0)
+        image_socket.bind(f"tcp://*:{self.host_config.port_zmq_images}")
+        self.zmq_image_socket = image_socket
+        image_interval_s = 1.0 / max(1, self.host_config.image_send_freq_hz)
+        logger.info("Image stream bound to port %s", self.host_config.port_zmq_images)
+        try:
+            while self._is_running:
+                loop_start = time.perf_counter()
+                try:
+                    image_obs = self.robot.get_camera_observation()
+                    image_socket.send_string(self._encode_observation(image_obs), flags=zmq.NOBLOCK)
+                except zmq.Again:
+                    pass
+                except Exception as e:
+                    logger.error(f"Failed to stream camera observation: {e}")
+
+                loop_duration = time.perf_counter() - loop_start
+                if loop_duration < image_interval_s:
+                    precise_sleep(image_interval_s - loop_duration)
+        finally:
+            image_socket.close()
+            self.zmq_image_socket = None
+
     def stop(self):
         """Stop the host and disconnect"""
         logger.info("Stopping XLerobot2Wheels host...")
         self._is_running = False
-        
+
+        if self._image_thread is not None and self._image_thread.is_alive():
+            self._image_thread.join(timeout=2.0)
+
         if self.robot.is_connected:
             self.robot.disconnect()
-        
+
         if self.zmq_cmd_socket:
             self.zmq_cmd_socket.close()
         if self.zmq_observation_socket:
             self.zmq_observation_socket.close()
         if self.zmq_context:
             self.zmq_context.term()
-        
+
         logger.info("XLerobot2Wheels host stopped")
 
 
 def main():
     """Main function for running the host"""
     import argparse
-    
+
     parser = argparse.ArgumentParser(description="XLerobot2Wheels Host")
     parser.add_argument("--robot.id", dest="robot_id", type=str, default="xlerobot_2wheels", help="Robot ID")
     parser.add_argument("--robot.port1", dest="robot_port1", type=str, default="/dev/ttyACM0", help="Port 1")
@@ -347,13 +390,52 @@ def main():
         help="ZMQ observation port",
     )
     parser.add_argument(
-        "--host.connection_time_s", dest="host_connection_time_s", type=int, default=3600, help="Connection time limit"
+        "--host.port_zmq_images",
+        dest="host_port_zmq_images",
+        type=int,
+        default=5557,
+        help="ZMQ image port used when --host.split_observations is enabled",
     )
     parser.add_argument(
-        "--host.watchdog_timeout_ms", dest="host_watchdog_timeout_ms", type=int, default=500, help="Watchdog timeout"
+        "--host.split_observations",
+        dest="host_split_observations",
+        action="store_true",
+        help="Send state on the observation port and camera images on a separate image port.",
     )
     parser.add_argument(
-        "--host.max_loop_freq_hz", dest="host_max_loop_freq_hz", type=int, default=30, help="Max loop frequency"
+        "--host.image_send_freq_hz",
+        dest="host_image_send_freq_hz",
+        type=int,
+        default=30,
+        help="Camera stream frequency when split observations are enabled.",
+    )
+    parser.add_argument(
+        "--host.image_jpeg_quality",
+        dest="host_image_jpeg_quality",
+        type=int,
+        default=80,
+        help="JPEG quality for transmitted camera frames.",
+    )
+    parser.add_argument(
+        "--host.connection_time_s",
+        dest="host_connection_time_s",
+        type=int,
+        default=3600,
+        help="Connection time limit",
+    )
+    parser.add_argument(
+        "--host.watchdog_timeout_ms",
+        dest="host_watchdog_timeout_ms",
+        type=int,
+        default=500,
+        help="Watchdog timeout",
+    )
+    parser.add_argument(
+        "--host.max_loop_freq_hz",
+        dest="host_max_loop_freq_hz",
+        type=int,
+        default=30,
+        help="Max loop frequency",
     )
     parser.add_argument(
         "--host.profile_diagnostics",
@@ -368,29 +450,33 @@ def main():
         default=2.0,
         help="When host diagnostics are enabled, print one report every N seconds.",
     )
-    
+
     args = parser.parse_args()
-    
+
     # Create configs
     robot_config = XLerobot2WheelsConfig(
         id=args.robot_id,
         port1=args.robot_port1,
         port2=args.robot_port2,
     )
-    
+
     host_config = XLerobot2WheelsHostConfig(
         port_zmq_cmd=args.host_port_zmq_cmd,
         port_zmq_observations=args.host_port_zmq_observations,
+        port_zmq_images=args.host_port_zmq_images,
+        split_observations=args.host_split_observations,
+        image_send_freq_hz=args.host_image_send_freq_hz,
+        image_jpeg_quality=args.host_image_jpeg_quality,
         connection_time_s=args.host_connection_time_s,
         watchdog_timeout_ms=args.host_watchdog_timeout_ms,
         max_loop_freq_hz=args.host_max_loop_freq_hz,
         profile_diagnostics=args.host_profile_diagnostics,
         profile_every_s=args.host_profile_every_s,
     )
-    
+
     # Create and run host
     host = XLerobot2WheelsHost(robot_config, host_config)
-    
+
     try:
         host.connect()
         host.run()

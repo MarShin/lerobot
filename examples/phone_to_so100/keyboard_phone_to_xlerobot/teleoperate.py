@@ -353,16 +353,22 @@ def print_controls(robot: XLerobot2WheelsClient) -> None:
     print("  2: reset right arm to startup pose\n")
 
 
-def make_robot() -> XLerobot2WheelsClient:
+def make_robot(*, split_observations: bool = False) -> XLerobot2WheelsClient:
     robot_config = XLerobot2WheelsClientConfig(
         remote_ip=REMOTE_IP,
         id=ROBOT_ID,
+        split_observations=split_observations,
     )
     return XLerobot2WheelsClient(robot_config)
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Teleoperate XLeRobot with two Android phones.")
+    parser.add_argument(
+        "--split-observations",
+        action="store_true",
+        help="Read robot state from the main observation port and camera images from a separate image port.",
+    )
     parser.add_argument(
         "--enable-rerun",
         action="store_true",
@@ -415,7 +421,7 @@ def main():
             f"SO101 URDF not found at {URDF_PATH}. Update URDF_PATH before running this script."
         )
 
-    robot = make_robot()
+    robot = make_robot(split_observations=args.split_observations)
     keyboard = KeyboardTeleop(KeyboardTeleopConfig())
 
     left_phone_config = PhoneConfig(

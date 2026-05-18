@@ -106,6 +106,17 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--remote-ip", default=REMOTE_IP, help="Robot-side host IP or hostname.")
     parser.add_argument("--robot-id", default=ROBOT_ID, help="Robot id used for metadata.")
+    parser.add_argument(
+        "--split-observations",
+        action="store_true",
+        help="Read robot state from the main observation port and full-resolution cameras from a separate image port.",
+    )
+    parser.add_argument(
+        "--max-camera-age-ms",
+        type=float,
+        default=250.0,
+        help="Fail recording if any camera frame is older than this many ms. Use 0 to disable.",
+    )
     parser.add_argument("--repo-id", default=DEFAULT_REPO_ID, help="Hugging Face dataset repo id.")
     parser.add_argument("--root", type=Path, default=None, help="Optional local dataset root.")
     parser.add_argument("--task", default=DEFAULT_TASK, help="Task string saved with every frame.")
@@ -179,7 +190,11 @@ def print_recording_controls() -> None:
 
 
 def make_robot(args: argparse.Namespace) -> XLerobot2WheelsClient:
-    config = XLerobot2WheelsClientConfig(remote_ip=args.remote_ip, id=args.robot_id)
+    config = XLerobot2WheelsClientConfig(
+        remote_ip=args.remote_ip,
+        id=args.robot_id,
+        split_observations=args.split_observations,
+    )
     return XLerobot2WheelsClient(config)
 
 
@@ -301,6 +316,44 @@ def assert_observation_has_cameras(robot: XLerobot2WheelsClient, observation: di
         )
 
 
+def assert_camera_freshness(robot: XLerobot2WheelsClient, *, max_age_ms: float) -> None:
+    if max_age_ms <= 0 or not robot.split_observations:
+        return
+
+    stale = {
+        name: age_ms
+        for name, age_ms in robot.camera_frame_ages_ms().items()
+        if age_ms is None or age_ms > max_age_ms
+    }
+    if stale:
+        formatted = {
+            name: "missing" if age_ms is None else f"{age_ms:.0f}ms" for name, age_ms in stale.items()
+        }
+        raise RuntimeError(
+            "Camera stream is stale while recording: "
+            f"{formatted}. Check the Pi image stream or increase --max-camera-age-ms."
+        )
+
+
+def wait_for_camera_observation(
+    robot: XLerobot2WheelsClient, *, timeout_s: float, max_camera_age_ms: float
+) -> dict[str, Any]:
+    deadline_s = time.perf_counter() + timeout_s
+    last_error: Exception | None = None
+    while time.perf_counter() < deadline_s:
+        observation = robot.get_observation()
+        try:
+            assert_observation_has_cameras(robot, observation)
+            assert_camera_freshness(robot, max_age_ms=max_camera_age_ms)
+            return observation
+        except (KeyError, RuntimeError) as exc:
+            last_error = exc
+            time.sleep(0.05)
+    if last_error is not None:
+        raise last_error
+    raise TimeoutError("Timed out waiting for remote camera observations.")
+
+
 def compute_merged_action(
     *,
     context: RecordingContext,
@@ -373,6 +426,7 @@ def record_control_loop(
     display_data: bool,
     rerun_log_every_n: int,
     skip_disabled_phone_ik: bool,
+    max_camera_age_ms: float,
     profiler: LoopProfiler,
     allow_reset_pause: bool = False,
     countdown_last_s: int = 0,
@@ -400,7 +454,9 @@ def record_control_loop(
 
         section_start = time.perf_counter()
         observation = robot.get_observation()
-        assert_observation_has_cameras(robot, observation)
+        if dataset is not None or display_data:
+            assert_observation_has_cameras(robot, observation)
+            assert_camera_freshness(robot, max_age_ms=max_camera_age_ms)
         profiler.record("robot_obs", time.perf_counter() - section_start)
 
         section_start = time.perf_counter()
@@ -533,8 +589,11 @@ def main() -> None:
         print_controls(robot)
         print_recording_controls()
 
-        initial_observation = robot.get_observation()
-        assert_observation_has_cameras(robot, initial_observation)
+        initial_observation = wait_for_camera_observation(
+            robot,
+            timeout_s=5.0,
+            max_camera_age_ms=args.max_camera_age_ms,
+        )
         context = make_recording_context(
             robot=robot,
             initial_observation=initial_observation,
@@ -568,6 +627,7 @@ def main() -> None:
                     display_data=args.enable_rerun,
                     rerun_log_every_n=max(1, args.rerun_log_every_n),
                     skip_disabled_phone_ik=args.skip_disabled_phone_ik,
+                    max_camera_age_ms=args.max_camera_age_ms,
                     profiler=profiler,
                 )
 
@@ -589,6 +649,7 @@ def main() -> None:
                         display_data=args.enable_rerun,
                         rerun_log_every_n=max(1, args.rerun_log_every_n),
                         skip_disabled_phone_ik=args.skip_disabled_phone_ik,
+                        max_camera_age_ms=args.max_camera_age_ms,
                         profiler=profiler,
                         allow_reset_pause=True,
                         countdown_last_s=RESET_COUNTDOWN_LAST_S,

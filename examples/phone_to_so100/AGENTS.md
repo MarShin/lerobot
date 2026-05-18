@@ -281,6 +281,14 @@ primary `action` should be the final robot-native command dictionary.
   - Dataset options: use `--resume` to append until the requested total `--num-episodes`, `--no-videos` to
     store camera frames as images, `--streaming-encoding` to encode during capture, and `--push-to-hub` to
     upload after successful finalization.
+  - For full-resolution recording without blocking the state/control loop, run the Pi host with split
+    observations and run `record.py` with `--split-observations`. The main observation socket then carries
+    arm/head/base state, while the image socket carries the latest full-resolution camera frames:
+    `uv run python -m lerobot.robots.xlerobot_2wheels.xlerobot_2wheels_host --robot.id=my_xlerobot_2wheels --host.split_observations --host.image_send_freq_hz 30`.
+    Recorder side:
+    `uv run python examples/phone_to_so100/keyboard_phone_to_xlerobot/record.py --repo-id <hf_user>/<dataset_name> --task "<task>" --split-observations`.
+    The image socket port is the `port_zmq_images` default in `config_xlerobot_2wheels.py`.
+    Use `--max-camera-age-ms` to guard against saving stale cached image frames.
   - Keep Rerun disabled by default during recording. Use `--enable-rerun --rerun-log-every-n 10` only when
     inspecting camera/action alignment, and use `--profile-latency` plus host `--profile-diagnostics` for
     collection runs where timing quality matters.
@@ -361,15 +369,19 @@ consider these speedups before changing phone axis mapping:
 - [x] Identify the current camera-resolution threshold for smooth live teleop. In the present Pi-host setup,
   `320x240` across the three host cameras is smooth for live phone teleoperation, while `640x480` pushes the
   host observation path over budget.
+- [x] Add opt-in split observation transport. With `--host.split_observations`, the host sends state-only
+  observations on the normal observation socket and streams camera frames on a separate image socket. This is
+  the preferred path for recording `640x480` images without putting full-resolution JPEG/base64 work directly
+  inside the motor command/state loop.
 
 ### Pending
 
 - [ ] Debug Android/WebXR stream stalls. Current logs show one phone can stop delivering callbacks for tens
   of seconds while the other phone continues streaming normally. This is now the highest-value next target.
-- [ ] Split live teleop observations from recording-quality image transport. For smooth teleop at `640x480`,
-  avoid forcing the host to JPEG/base64 three full-resolution images on the same low-latency control path as
-  arm/head/base state. A likely direction is state-fast plus image-slower, or a separate image stream that
-  recording can consume without making manual teleop observation-limited.
+- [ ] Validate split observation transport on hardware at `640x480`. Watch host diagnostics plus Pi CPU load
+  with `top`/`htop`; if the image stream still starves the state loop, lower `--host.image_send_freq_hz`, lower
+  `--host.image_jpeg_quality`, or move full-resolution image capture to a Pi-local recording sidecar with
+  timestamps and merge it with Mac-side state/action data after the episode.
 - [ ] Optimize `EEReferenceAndDelta(use_latched_reference=True)` so FK runs only when a reference pose is
   needed. With latched reference enabled, the current implementation still computes FK at the start of every
   call. Semantically, FK is only required on the enable rising edge when `reference_ee_pose` is captured, and

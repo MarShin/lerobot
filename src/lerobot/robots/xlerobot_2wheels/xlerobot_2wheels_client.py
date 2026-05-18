@@ -17,8 +17,9 @@
 import base64
 import json
 import logging
+import time
 from functools import cached_property
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 import cv2
 import numpy as np
@@ -27,7 +28,7 @@ import zmq
 from lerobot.utils.errors import DeviceAlreadyConnectedError, DeviceNotConnectedError
 
 from ..robot import Robot
-from .config_xlerobot_2wheels import XLerobot2WheelsConfig, XLerobot2WheelsClientConfig
+from .config_xlerobot_2wheels import XLerobot2WheelsClientConfig
 
 
 class XLerobot2WheelsClient(Robot):
@@ -43,17 +44,22 @@ class XLerobot2WheelsClient(Robot):
         self.remote_ip = config.remote_ip
         self.port_zmq_cmd = config.port_zmq_cmd
         self.port_zmq_observations = config.port_zmq_observations
+        self.port_zmq_images = config.port_zmq_images
+        self.split_observations = config.split_observations
 
         self.teleop_keys = config.teleop_keys
 
         self.polling_timeout_ms = config.polling_timeout_ms
+        self.image_polling_timeout_ms = config.image_polling_timeout_ms
         self.connect_timeout_s = config.connect_timeout_s
 
         self.zmq_context = None
         self.zmq_cmd_socket = None
         self.zmq_observation_socket = None
+        self.zmq_image_socket = None
 
         self.last_frames = {}
+        self.last_frame_receive_time_s = {}
         self.last_remote_state = {}
 
         # Define three speed levels and a current index
@@ -90,7 +96,7 @@ class XLerobot2WheelsClient(Robot):
             ),
             float,
         )
-        
+
     @cached_property
     def _state_order(self) -> tuple[str, ...]:
         return tuple(self._state_ft.keys())
@@ -134,6 +140,12 @@ class XLerobot2WheelsClient(Robot):
         self.zmq_observation_socket.connect(zmq_observations_locator)
         self.zmq_observation_socket.setsockopt(zmq.CONFLATE, 1)
 
+        if self.split_observations:
+            self.zmq_image_socket = self.zmq_context.socket(zmq.PULL)
+            zmq_images_locator = f"tcp://{self.remote_ip}:{self.port_zmq_images}"
+            self.zmq_image_socket.connect(zmq_images_locator)
+            self.zmq_image_socket.setsockopt(zmq.CONFLATE, 1)
+
         poller = zmq.Poller()
         poller.register(self.zmq_observation_socket, zmq.POLLIN)
         socks = dict(poller.poll(self.connect_timeout_s * 1000))
@@ -145,25 +157,25 @@ class XLerobot2WheelsClient(Robot):
     def calibrate(self) -> None:
         pass
 
-    def _poll_and_get_latest_message(self) -> Optional[str]:
+    def _poll_and_get_latest_message(self, socket: zmq.Socket, timeout_ms: int) -> str | None:
         """Polls the ZMQ socket for a limited time and returns the latest message string."""
         poller = zmq.Poller()
-        poller.register(self.zmq_observation_socket, zmq.POLLIN)
+        poller.register(socket, zmq.POLLIN)
 
         try:
-            socks = dict(poller.poll(self.polling_timeout_ms))
+            socks = dict(poller.poll(timeout_ms))
         except zmq.ZMQError as e:
             logging.error(f"ZMQ polling error: {e}")
             return None
 
-        if self.zmq_observation_socket not in socks:
+        if socket not in socks:
             logging.info("No new data available within timeout.")
             return None
 
         last_msg = None
         while True:
             try:
-                msg = self.zmq_observation_socket.recv_string(zmq.NOBLOCK)
+                msg = socket.recv_string(zmq.NOBLOCK)
                 last_msg = msg
             except zmq.Again:
                 break
@@ -173,7 +185,7 @@ class XLerobot2WheelsClient(Robot):
 
         return last_msg
 
-    def _parse_observation_json(self, obs_string: str) -> Optional[Dict[str, Any]]:
+    def _parse_observation_json(self, obs_string: str) -> dict[str, Any] | None:
         """Parses the JSON observation string."""
         try:
             return json.loads(obs_string)
@@ -181,7 +193,7 @@ class XLerobot2WheelsClient(Robot):
             logging.error(f"Error decoding JSON observation: {e}")
             return None
 
-    def _decode_image_from_b64(self, image_b64: str) -> Optional[np.ndarray]:
+    def _decode_image_from_b64(self, image_b64: str) -> np.ndarray | None:
         """Decodes a base64 encoded image string to an OpenCV image."""
         if not image_b64:
             return None
@@ -196,19 +208,18 @@ class XLerobot2WheelsClient(Robot):
             logging.error(f"Error decoding base64 image data: {e}")
             return None
 
-    def _remote_state_from_obs(
-        self, observation: Dict[str, Any]
-    ) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
+    def _remote_state_from_obs(self, observation: dict[str, Any]) -> dict[str, Any]:
         """Extracts frames, and state from the parsed observation."""
 
         flat_state = {key: observation.get(key, 0.0) for key in self._state_order}
 
         state_vec = np.array([flat_state[key] for key in self._state_order], dtype=np.float32)
 
-        obs_dict: Dict[str, Any] = {**flat_state, "observation.state": state_vec}
+        return {**flat_state, "observation.state": state_vec}
 
+    def _frames_from_obs(self, observation: dict[str, Any]) -> dict[str, np.ndarray]:
         # Decode images
-        current_frames: Dict[str, np.ndarray] = {}
+        current_frames: dict[str, np.ndarray] = {}
         for cam_name, image_b64 in observation.items():
             if cam_name not in self._cameras_ft:
                 continue
@@ -216,9 +227,34 @@ class XLerobot2WheelsClient(Robot):
             if frame is not None:
                 current_frames[cam_name] = frame
 
-        return current_frames, obs_dict
+        return current_frames
 
-    def _get_data(self) -> Tuple[Dict[str, np.ndarray], Dict[str, Any], Dict[str, Any]]:
+    def _poll_image_stream(self) -> None:
+        if self.zmq_image_socket is None:
+            return
+
+        latest_message_str = self._poll_and_get_latest_message(
+            self.zmq_image_socket, self.image_polling_timeout_ms
+        )
+        if latest_message_str is None:
+            return
+
+        observation = self._parse_observation_json(latest_message_str)
+        if observation is None:
+            return
+
+        try:
+            new_frames = self._frames_from_obs(observation)
+        except Exception as e:
+            logging.error(f"Error processing image observation, serving last images: {e}")
+            return
+
+        now_s = time.monotonic()
+        for cam_name, frame in new_frames.items():
+            self.last_frames[cam_name] = frame
+            self.last_frame_receive_time_s[cam_name] = now_s
+
+    def _get_data(self) -> tuple[dict[str, np.ndarray], dict[str, Any]]:
         """
         Polls the video socket for the latest observation data.
 
@@ -228,7 +264,12 @@ class XLerobot2WheelsClient(Robot):
         """
 
         # 1. Get the latest message string from the socket
-        latest_message_str = self._poll_and_get_latest_message()
+        latest_message_str = self._poll_and_get_latest_message(
+            self.zmq_observation_socket, self.polling_timeout_ms
+        )
+
+        if self.split_observations:
+            self._poll_image_stream()
 
         # 2. If no message, return cached data
         if latest_message_str is None:
@@ -243,15 +284,19 @@ class XLerobot2WheelsClient(Robot):
 
         # 5. Process the valid observation data
         try:
-            new_frames, new_state = self._remote_state_from_obs(observation)
+            new_state = self._remote_state_from_obs(observation)
+            new_frames = self._frames_from_obs(observation) if not self.split_observations else {}
         except Exception as e:
             logging.error(f"Error processing observation data, serving last observation: {e}")
             return self.last_frames, self.last_remote_state
 
-        self.last_frames = new_frames
+        now_s = time.monotonic()
+        for cam_name, frame in new_frames.items():
+            self.last_frames[cam_name] = frame
+            self.last_frame_receive_time_s[cam_name] = now_s
         self.last_remote_state = new_state
 
-        return new_frames, new_state
+        return self.last_frames, new_state
 
     def get_observation(self) -> dict[str, Any]:
         """
@@ -260,7 +305,9 @@ class XLerobot2WheelsClient(Robot):
         and a camera frame. Receives over ZMQ, translate to body-frame vel
         """
         if not self._is_connected:
-            raise DeviceNotConnectedError("XLerobot2WheelsClient is not connected. You need to run `robot.connect()`.")
+            raise DeviceNotConnectedError(
+                "XLerobot2WheelsClient is not connected. You need to run `robot.connect()`."
+            )
 
         frames, obs_dict = self._get_data()
 
@@ -272,6 +319,15 @@ class XLerobot2WheelsClient(Robot):
             obs_dict[cam_name] = frame
 
         return obs_dict
+
+    def camera_frame_ages_ms(self) -> dict[str, float | None]:
+        now_s = time.monotonic()
+        return {
+            cam_name: None
+            if cam_name not in self.last_frame_receive_time_s
+            else (now_s - self.last_frame_receive_time_s[cam_name]) * 1000.0
+            for cam_name in self._cameras_ft
+        }
 
     def _from_keyboard_to_base_action(self, pressed_keys: np.ndarray):
         # Speed control
@@ -294,9 +350,9 @@ class XLerobot2WheelsClient(Robot):
             theta_cmd += angular_speed
         if self.teleop_keys["rotate_right"] in pressed_keys:
             theta_cmd -= angular_speed
-            
+
         return {
-            "x.vel": x_cmd, 
+            "x.vel": x_cmd,
             "theta.vel": theta_cmd,
         }
 
@@ -338,5 +394,7 @@ class XLerobot2WheelsClient(Robot):
             )
         self.zmq_observation_socket.close()
         self.zmq_cmd_socket.close()
+        if self.zmq_image_socket is not None:
+            self.zmq_image_socket.close()
         self.zmq_context.term()
         self._is_connected = False

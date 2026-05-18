@@ -24,18 +24,15 @@ from ..config import RobotConfig
 def xlerobot_2wheels_cameras_config() -> dict[str, CameraConfig]:
     return {
         # camera index subject to change
-        "head": OpenCVCameraConfig( # 4
+        "head": OpenCVCameraConfig(  # 4
             index_or_path=Path("/dev/video0"), fps=30, width=320, height=240, rotation=Cv2Rotation.NO_ROTATION
         ),
-
-        "left_wrist": OpenCVCameraConfig( # 0
+        "left_wrist": OpenCVCameraConfig(  # 0
             index_or_path=Path("/dev/video2"), fps=30, width=320, height=240, rotation=Cv2Rotation.NO_ROTATION
         ),
-
-        "right_wrist": OpenCVCameraConfig( # 2
+        "right_wrist": OpenCVCameraConfig(  # 2
             index_or_path=Path("/dev/video4"), fps=30, width=320, height=240, rotation=Cv2Rotation.NO_ROTATION
         ),
-
         # "head": RealSenseCameraConfig(
         #     serial_number_or_name="125322060037",  # Replace with camera SN
         #     fps=30,
@@ -51,7 +48,6 @@ def xlerobot_2wheels_cameras_config() -> dict[str, CameraConfig]:
 @RobotConfig.register_subclass("xlerobot_2wheels")
 @dataclass
 class XLerobot2WheelsConfig(RobotConfig):
-
     port1: str = "/dev/ttyACM0"  # port to connect to the bus (so101 + head camera)
     port2: str = "/dev/ttyACM1"  # port to connect to the bus (arms + 2 wheels)
     disable_torque_on_disconnect: bool = True
@@ -67,7 +63,7 @@ class XLerobot2WheelsConfig(RobotConfig):
 
     # Differential drive parameters
     wheel_radius: float = 0.05  # Wheel radius in meters
-    wheelbase: float = 0.25     # Distance between left and right wheels in meters
+    wheelbase: float = 0.25  # Distance between left and right wheels in meters
 
     teleop_keys: dict[str, str] = field(
         default_factory=lambda: {
@@ -85,12 +81,19 @@ class XLerobot2WheelsConfig(RobotConfig):
     )
 
 
-
 @dataclass
 class XLerobot2WheelsHostConfig:
     # Network Configuration
     port_zmq_cmd: int = 5555
     port_zmq_observations: int = 5556
+    port_zmq_images: int = 5557
+
+    # When enabled, the main observation socket sends state only and a separate
+    # image socket sends camera frames. This keeps full-resolution JPEG work out
+    # of the motor command/state loop.
+    split_observations: bool = False
+    image_send_freq_hz: int = 30
+    image_jpeg_quality: int = 80
 
     # Duration of the application
     connection_time_s: int = 3600
@@ -104,6 +107,7 @@ class XLerobot2WheelsHostConfig:
     profile_diagnostics: bool = False
     profile_every_s: float = 2.0
 
+
 @RobotConfig.register_subclass("xlerobot_2wheels_client")
 @dataclass
 class XLerobot2WheelsClientConfig(RobotConfig):
@@ -111,10 +115,12 @@ class XLerobot2WheelsClientConfig(RobotConfig):
     remote_ip: str
     port_zmq_cmd: int = 5555
     port_zmq_observations: int = 5556
+    port_zmq_images: int = 5557
+    split_observations: bool = False
 
     # Differential drive parameters
     wheel_radius: float = 0.05  # Wheel radius in meters
-    wheelbase: float = 0.25     # Distance between left and right wheels in meters
+    wheelbase: float = 0.25  # Distance between left and right wheels in meters
 
     teleop_keys: dict[str, str] = field(
         default_factory=lambda: {
@@ -134,4 +140,5 @@ class XLerobot2WheelsClientConfig(RobotConfig):
     cameras: dict[str, CameraConfig] = field(default_factory=xlerobot_2wheels_cameras_config)
 
     polling_timeout_ms: int = 15
+    image_polling_timeout_ms: int = 1
     connect_timeout_s: int = 5
