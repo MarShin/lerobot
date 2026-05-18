@@ -174,7 +174,7 @@ class XLerobot2WheelsHost:
         self.zmq_observation_socket.setsockopt(zmq.SNDTIMEO, 0)
         self.zmq_observation_socket.bind(f"tcp://*:{self.host_config.port_zmq_observations}")
 
-        if self.host_config.split_observations:
+        if self.host_config.stream_images:
             self._image_thread = threading.Thread(
                 target=self._run_image_loop, name="xlerobot-image-stream", daemon=True
             )
@@ -394,20 +394,26 @@ def main():
         dest="host_port_zmq_images",
         type=int,
         default=5557,
-        help="ZMQ image port used when --host.split_observations is enabled",
+        help="ZMQ image port used when --host.stream_images is enabled",
     )
     parser.add_argument(
         "--host.split_observations",
         dest="host_split_observations",
         action="store_true",
-        help="Send state on the observation port and camera images on a separate image port.",
+        help="Send state only on the observation port.",
+    )
+    parser.add_argument(
+        "--host.stream_images",
+        dest="host_stream_images",
+        action="store_true",
+        help="Stream camera images on the separate image port. Requires --host.split_observations.",
     )
     parser.add_argument(
         "--host.image_send_freq_hz",
         dest="host_image_send_freq_hz",
         type=int,
-        default=30,
-        help="Camera stream frequency when split observations are enabled.",
+        default=10,
+        help="Camera stream frequency when --host.stream_images is enabled.",
     )
     parser.add_argument(
         "--host.image_jpeg_quality",
@@ -452,6 +458,8 @@ def main():
     )
 
     args = parser.parse_args()
+    if args.host_stream_images and not args.host_split_observations:
+        parser.error("--host.stream_images requires --host.split_observations")
 
     # Create configs
     robot_config = XLerobot2WheelsConfig(
@@ -465,6 +473,7 @@ def main():
         port_zmq_observations=args.host_port_zmq_observations,
         port_zmq_images=args.host_port_zmq_images,
         split_observations=args.host_split_observations,
+        stream_images=args.host_stream_images,
         image_send_freq_hz=args.host_image_send_freq_hz,
         image_jpeg_quality=args.host_image_jpeg_quality,
         connection_time_s=args.host_connection_time_s,

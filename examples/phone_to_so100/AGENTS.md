@@ -284,7 +284,7 @@ primary `action` should be the final robot-native command dictionary.
   - For full-resolution recording without blocking the state/control loop, run the Pi host with split
     observations and run `record.py` with `--split-observations`. The main observation socket then carries
     arm/head/base state, while the image socket carries the latest full-resolution camera frames:
-    `uv run python -m lerobot.robots.xlerobot_2wheels.xlerobot_2wheels_host --robot.id=my_xlerobot_2wheels --host.split_observations --host.image_send_freq_hz 30`.
+    `uv run python -m lerobot.robots.xlerobot_2wheels.xlerobot_2wheels_host --robot.id=my_xlerobot_2wheels --host.split_observations --host.stream_images --host.image_send_freq_hz 10`.
     Recorder side:
     `uv run python examples/phone_to_so100/keyboard_phone_to_xlerobot/record.py --repo-id <hf_user>/<dataset_name> --task "<task>" --split-observations`.
     The image socket port is the `port_zmq_images` default in `config_xlerobot_2wheels.py`.
@@ -370,9 +370,9 @@ consider these speedups before changing phone axis mapping:
   `320x240` across the three host cameras is smooth for live phone teleoperation, while `640x480` pushes the
   host observation path over budget.
 - [x] Add opt-in split observation transport. With `--host.split_observations`, the host sends state-only
-  observations on the normal observation socket and streams camera frames on a separate image socket. This is
-  the preferred path for recording `640x480` images without putting full-resolution JPEG/base64 work directly
-  inside the motor command/state loop.
+  observations on the normal observation socket. Add `--host.stream_images` only when recording or previewing
+  images from the separate image socket; do not enable image streaming for latency-sensitive live teleop unless
+  you are actively testing image transport.
 
 ### Pending
 

@@ -88,11 +88,12 @@ class XLerobot2WheelsHostConfig:
     port_zmq_observations: int = 5556
     port_zmq_images: int = 5557
 
-    # When enabled, the main observation socket sends state only and a separate
-    # image socket sends camera frames. This keeps full-resolution JPEG work out
-    # of the motor command/state loop.
+    # When enabled, the main observation socket sends state only. Enable
+    # stream_images separately for recording/preview; camera capture and JPEG
+    # encoding can still starve the state/control loop on the Pi.
     split_observations: bool = False
-    image_send_freq_hz: int = 30
+    stream_images: bool = False
+    image_send_freq_hz: int = 10
     image_jpeg_quality: int = 80
 
     # Duration of the application

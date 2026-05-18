@@ -169,7 +169,7 @@ class XLerobot2WheelsClient(Robot):
             return None
 
         if socket not in socks:
-            logging.info("No new data available within timeout.")
+            logging.debug("No new data available within timeout.")
             return None
 
         last_msg = None
